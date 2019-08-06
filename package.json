@@ -1,0 +1,12 @@
+{
+	"dependencies": {
+		"phaser-ce": "^2.13.2"
+	},
+	"name": "120",
+	"version": "0",
+	"main": "js/index.ts",
+	"license": "MIT",
+	"scripts": {
+		"start": "python -m http.server"
+	}
+}

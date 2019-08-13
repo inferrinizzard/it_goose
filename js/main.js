@@ -6,16 +6,19 @@ var honks = ["English", "French", "Hindi", "Russian", "Japan"];
 var presses = 0;
 var hkI = 0,
 	honkAnchor = 0;
-var top;
-var timer;
+var max;
+var timer, livesText;
 var spawner;
-var time = 90;
+var start;
+var time = 90,
+	lives = 5;
 var speed = 0.5,
 	interval = 3100;
 var bubbles = [],
 	letters = [],
 	words = [],
-	pos = [0, 150, 325, 500, 650];
+	pos = [0, 150, 325, 500, 650],
+	targets = [];
 
 class Play extends Phaser.State {
 	preload = () => {
@@ -27,6 +30,7 @@ class Play extends Phaser.State {
 		honks.forEach(h => game.load.audio("honk" + h, "honk" + h + ".mp3"));
 	};
 	create = () => {
+		start = game.time.totalElapsedSeconds();
 		game.add.sprite(0, 0, "bgMeeting800");
 		game.add.sprite(580, 233, "gooseBoss");
 		pos.forEach(p => game.add.sprite(p, 650, "vc"));
@@ -64,26 +68,45 @@ class Play extends Phaser.State {
 			fontSize: 24,
 			fill: "#000",
 		});
+		livesText = game.add.text(680, 50, "Lives: " + lives, {
+			font: "Charter",
+			fontSize: 24,
+			fill: "#000",
+		});
 	};
 	update = () => {
 		timer.text =
 			"Meeting ends\nin: " +
-			(time - Math.floor(game.time.totalElapsedSeconds())) +
+			(time - Math.floor(game.time.totalElapsedSeconds() - start)) +
 			" minutes";
-		if (time - Math.floor(game.time.totalElapsedSeconds()) <= 0) {
+		if (
+			time - Math.floor(game.time.totalElapsedSeconds() - start) <= 0 ||
+			lives <= 0
+		) {
+			honks[Math.floor(Math.random() * honks.length)].play();
+			bubbles.forEach(b => b.destroy());
+			words.forEach(w => {
+				w.forEach(l => l.destroy());
+				w = [];
+			});
+			words = [];
+			bubbles = [];
 			game.state.start("GameOver");
 			clearTimeout(spawner);
 		}
 
 		game.physics.arcade.collide(bubbles, letters);
-		bubbles.forEach((b, k) => {
-			b.body.y -= speed;
-			if (b.body.y <= 0) {
-				b.destroy();
-				bubbles = bubbles.filter((f, fk) => fk != k);
-				return;
-			}
-		});
+		[bubbles, targets].forEach(g =>
+			g.forEach((b, k) => {
+				b.body.y -= speed;
+				if (b.body.y <= 0) {
+					b.destroy();
+					livesText.text = "Lives: " + --lives;
+					bubbles = bubbles.filter((f, fk) => fk != k);
+					return;
+				}
+			})
+		);
 		if (honkKeys[hkI].justDown) {
 			if (hkI == 0) honkAnchor = Math.random() * game.world.width;
 			letters.push(
@@ -93,29 +116,58 @@ class Play extends Phaser.State {
 				)
 			);
 			if (hkI == honkKeys.length - 1) {
-				letters.forEach(l => game.physics.p2.enable(l, false));
+				letters.forEach(l => {
+					game.physics.arcade.enable(l, false);
+					if (bubbles.length == 0) l.body.gravity.y = 300;
+					l.bounce = 0.75;
+				});
 				words.push([...letters]);
 				letters = [];
 				honks[Math.floor(Math.random() * honks.length)].play();
-				top = bubbles.reduce(
-					(max, b) => (b.body.y < max.body.y ? b : max),
-					bubbles[0]
-				);
-				console.log(top);
+				if (bubbles.length > 0) {
+					// max = bubbles.reduce(
+					// 	(max, b) =>
+					// 		b.body.y < max.body.y && !targets.includes(b) ? b : max,
+					// 	bubbles[0]
+					// );
+					max = bubbles.pop();
+					targets.push(max);
+				}
+				// else
+				// 	words[words.length - 1].forEach(l =>
+				// 		setTimeout(() => l.destroy(), 5000)
+				// 	);
 			}
 			hkI = (hkI + 1) % honkKeys.length;
 		}
 		if (honkButt.justDown) {
 			honks[Math.floor(Math.random() * honks.length)].play();
-			this.spawnText("honk.", 25);
+			// this.spawnText("honk.", 25);
 		}
 
-		words.forEach(w =>
+		words.forEach((w, k) => {
+			var destroy = false;
 			w.forEach(l => {
 				if (l.body.y > game.world.height / 2 && l.style.fill != "white")
 					l.setStyle({ ...l.style, fill: "white" });
-			})
-		);
+				if (k < targets.length) {
+					game.physics.arcade.moveToObject(l, targets[k], 400);
+					if (Phaser.Rectangle.contains(l.body, targets[k].x, targets[k].y)) {
+						l.body.velocity.setTo(0, 0);
+						targets[k].destroy();
+						targets.pop();
+						destroy = true;
+					}
+				}
+				// if (l.body.y > game.world.height) destroy = true;
+			});
+			if (w.some(l => l.body.y > game.world.height)) w = null;
+			if (destroy) {
+				w.forEach(l => l.destroy());
+				w = null;
+			}
+		});
+		words.filter(w => w);
 	};
 
 	spawnText = (
@@ -184,7 +236,7 @@ class GameOver extends Phaser.State {
 	create = () => {
 		game.add.sprite(0, 0, "titleScreen");
 		game.add.sprite(0, 25, "title");
-		let scoreText = game.add.text(320, 320, "Score:\nnum", {
+		let scoreText = game.add.text(320, 320, "Score:\n" + lives, {
 			font: "Charter",
 			fontSize: 72,
 		});
@@ -217,4 +269,4 @@ class GameOver extends Phaser.State {
 game.state.add("GameOver", GameOver);
 game.state.add("Play", Play);
 game.state.add("MainMenu", MainMenu);
-game.state.start("GameOver");
+game.state.start("MainMenu");

@@ -8,7 +8,7 @@ var hkI = 0;
 var bubbles = [],
 	letters = [];
 
-class mainMenu extends Phaser.State {
+class Play extends Phaser.State {
 	preload = () => {
 		game.load.path = "../assets/";
 
@@ -79,5 +79,45 @@ class mainMenu extends Phaser.State {
 	};
 }
 
-game.state.add("MainMenu", mainMenu);
+var feather;
+var playButt;
+
+class MainMenu extends Phaser.State {
+	preload = () => {
+		game.load.path = "../assets/";
+
+		["title", "titleScreen", "feather"].forEach(img =>
+			game.load.image(img, img + ".png")
+		);
+	};
+	create = () => {
+		game.add.sprite(0, 0, "titleScreen");
+		game.add.sprite(0, 25, "title");
+		playButt = game.add.text(350, 380, "Play", {
+			font: "Charter",
+			fontSize: 72,
+		});
+		playButt.rotation = (Math.PI / 180) * 23;
+		playButt.anchor.setTo(0.5, 0.5);
+		playButt.inputEnabled = true;
+		feather = game.add.sprite(0, 0, "feather");
+		feather.anchor.setTo(0.125, 0.875);
+		game.input.mouse.capture = true;
+	};
+	update = () => {
+		if (playButt.input.pointerOver()) {
+			playButt.scale.setTo(1.1);
+			feather.rotation = (Math.PI / 180) * 23;
+			if (game.input.activePointer.leftButton.justPressed())
+				game.state.start("Play");
+		} else {
+			playButt.scale.setTo(1);
+			feather.rotation = 0;
+		}
+		feather.position.setTo(game.input.x, game.input.y);
+	};
+}
+
+game.state.add("Play", Play);
+game.state.add("MainMenu", MainMenu);
 game.state.start("MainMenu");

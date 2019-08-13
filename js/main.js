@@ -5,46 +5,35 @@ var honkKeys;
 var honks = ["English", "French", "Hindi", "Russian", "Japan"];
 var presses = 0;
 var hkI = 0;
+var bubbles = [],
+	letters = [];
 
 class mainMenu extends Phaser.State {
 	preload = () => {
 		game.load.path = "../assets/";
 
-		["quail1"].forEach(img => game.load.image(img, img + ".png"));
+		["whitesquare"].forEach(img => game.load.image(img, img + ".png"));
 		honks.forEach(h => game.load.audio("honk" + h, "honk" + h + ".mp3"));
 	};
 	create = () => {
-		let q = game.add.sprite(0, 0, "quail1");
-		q.x = game.world.width / 2 - q.width;
-		q.y = game.world.height / 2 - q.height;
-		q.scale.setTo(2, 2);
-		// var main = game.add.text(
-		// 	game.world.width / 2,
-		// 	game.world.height / 4,
-		// 	"«it goose.»",
-		// 	{
-		// 		fontSize: 64,
-		// 		align: "center",
-		// 	}
-		// );
-		// main.addColor("aliceblue");
-		// main.x -= main.width / 2;
-		// main.y -= main.height;
-
 		game.physics.startSystem(Phaser.Physics.P2JS);
 		game.physics.p2.gravity.y = 500;
 
-		let letters = [];
-		const addText = (x, y, text) => {
-			letters = [
-				...letters,
-				game.add.text(x, y, text, {
-					font: "Zapfino, Verdana",
-					align: "center",
-					fontSize: 32,
-				}),
-			];
-		};
+		letters = game.add.group();
+		bubbles = game.add.group();
+		setInterval(() => {
+			if (bubbles.totals < 10) {
+				let bubble = bubbles.create(
+					Math.random() * game.world.width,
+					(Math.random() * game.world.height) / 4 + (game.world.height * 3) / 4,
+					"whitesquare"
+				);
+				bubble.scale.setTo(2, 1);
+				game.physics.arcade.enable(bubble);
+				bubble.body.gravity = 0;
+				bubble.body.velocity.y = -100;
+			}
+		}, 5000);
 
 		honkButt = game.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR);
 		honkKeys = ["H", "O", "N", "K"].map(k =>
@@ -53,6 +42,8 @@ class mainMenu extends Phaser.State {
 		honks = honks.map(h => game.add.audio("honk" + h, 1));
 	};
 	update = () => {
+		game.physics.arcade.collide(bubbles, letters);
+		bubbles.forEach(b => (b.body.y -= 0.2));
 		let temp = honkKeys[hkI];
 		if (temp.justDown) {
 			// console.log(presses++);
@@ -61,7 +52,7 @@ class mainMenu extends Phaser.State {
 		}
 		if (honkButt.justDown) {
 			honks[Math.floor(Math.random() * honks.length)].play();
-			this.spawnText("honk.", 25);
+			letters.addChild(this.spawnText("honk.", 25));
 		}
 	};
 
@@ -84,6 +75,7 @@ class mainMenu extends Phaser.State {
 		game.physics.p2.enable(letter, false);
 		letter.body.setCircle(size);
 		letter.bounce = 0.5;
+		return letter;
 	};
 }
 

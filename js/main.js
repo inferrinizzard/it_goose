@@ -22,8 +22,6 @@ var bubbles = [],
 
 class Play extends Phaser.State {
 	preload = () => {
-		game.load.path = "../assets/";
-
 		["bgMeeting800", "gooseBoss", "vc", "bubble"].forEach(img =>
 			game.load.image(img, img + ".png")
 		);
@@ -98,12 +96,14 @@ class Play extends Phaser.State {
 		game.physics.arcade.collide(bubbles, letters);
 		[bubbles, targets].forEach(g =>
 			g.forEach((b, k) => {
-				b.body.y -= speed;
-				if (b.body.y <= 0) {
-					b.destroy();
-					livesText.text = "Lives: " + --lives;
-					bubbles = bubbles.filter((f, fk) => fk != k);
-					return;
+				if (b && b.body) {
+					b.body.y -= speed;
+					if (b.body.y <= 0) {
+						b.destroy();
+						livesText.text = "Lives: " + --lives;
+						bubbles = bubbles.filter((f, fk) => fk != k);
+						return;
+					}
 				}
 			})
 		);
@@ -148,20 +148,22 @@ class Play extends Phaser.State {
 		words.forEach((w, k) => {
 			var destroy = false;
 			w.forEach(l => {
-				if (l.body.y > game.world.height / 2 && l.style.fill != "white")
-					l.setStyle({ ...l.style, fill: "white" });
-				if (k < targets.length) {
-					game.physics.arcade.moveToObject(l, targets[k], 400);
-					if (Phaser.Rectangle.contains(l.body, targets[k].x, targets[k].y)) {
-						l.body.velocity.setTo(0, 0);
-						targets[k].destroy();
-						targets.pop();
-						destroy = true;
+				if (l && l.body) {
+					if (l.body.y > game.world.height / 2 && l.style.fill != "white")
+						l.setStyle({ ...l.style, fill: "white" });
+					if (k < targets.length) {
+						game.physics.arcade.moveToObject(l, targets[k], 400);
+						if (Phaser.Rectangle.contains(l.body, targets[k].x, targets[k].y)) {
+							l.body.velocity.setTo(0, 0);
+							targets[k].destroy();
+							targets.pop();
+							destroy = true;
+						}
 					}
 				}
 				// if (l.body.y > game.world.height) destroy = true;
 			});
-			if (w.some(l => l.body.y > game.world.height)) w = null;
+			if (w.some(l => l && l.body && l.body.y > game.world.height)) w = null;
 			if (destroy) {
 				w.forEach(l => l.destroy());
 				w = null;
@@ -227,8 +229,6 @@ class MainMenu extends Phaser.State {
 var againButt;
 class GameOver extends Phaser.State {
 	preload = () => {
-		game.load.path = "../assets/";
-
 		["title", "titleScreen", "feather"].forEach(img =>
 			game.load.image(img, img + ".png")
 		);

@@ -63,6 +63,8 @@ class Play extends Phaser.State {
 			fill: "#000",
 		});
 	};
+
+	//game.sound.setDecodedCallback([ explosion, sword, blaster ], start, this);
 	update = () => {
 		timer.text =
 			"Meeting ends\nin: " +

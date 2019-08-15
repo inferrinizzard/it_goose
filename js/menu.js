@@ -53,11 +53,6 @@ class MainMenu extends Phaser.State {
 
 var againButt;
 class GameOver extends Phaser.State {
-	preload = () => {
-		["title", "titleScreen", "feather"].forEach(img =>
-			game.load.image(img, img + ".png")
-		);
-	};
 	create = () => {
 		game.add.sprite(0, 0, "titleScreen");
 		game.add.sprite(0, 25, "title");
@@ -81,8 +76,13 @@ class GameOver extends Phaser.State {
 		if (againButt.input.pointerOver()) {
 			againButt.scale.setTo(1.1);
 			feather.rotation = (Math.PI / 180) * 23;
-			if (game.input.activePointer.leftButton.justPressed())
+			if (game.input.activePointer.leftButton.justPressed()) {
+				lives = 5;
+				start = 0;
+				interval = 3000;
+				speed = 0.5;
 				game.state.start("MainMenu");
+			}
 		} else {
 			againButt.scale.setTo(1);
 			feather.rotation = 0;

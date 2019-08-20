@@ -1,8 +1,10 @@
 var game = new Phaser.Game(800, 800, Phaser.AUTO, "content", true);
 
 var feather;
-var playButt;
+var playButt, controls, back;
+var controlText;
 var honks = ["English", "French", "Hindi", "Russian", "Japan"];
+var wordStyle = { font: "Charter", fontSize: 24, fill: "#000" };
 
 class MainMenu extends Phaser.State {
 	preload = () => {
@@ -20,26 +22,58 @@ class MainMenu extends Phaser.State {
 
 		game.add.sprite(0, 0, "titleScreen");
 		game.add.sprite(0, 25, "title");
-		playButt = game.add.text(350, 380, "Play", {
-			font: "Charter",
+		playButt = game.add.text(350, 380, "Play", { ...wordStyle, fontSize: 72 });
+		controls = game.add.text(300, 500, "Controls", {
+			...wordStyle,
 			fontSize: 72,
 		});
-		playButt.rotation = (Math.PI / 180) * 23;
-		playButt.anchor.setTo(0.5, 0.5);
-		playButt.inputEnabled = true;
+		back = game.add.text(100, 700, "←", { ...wordStyle, fontSize: 72 });
+		[playButt, controls, back].forEach(s => {
+			s.rotation = (Math.PI / 180) * 23;
+			s.anchor.setTo(0.5, 0.5);
+			s.inputEnabled = true;
+		});
+		back.kill();
+
+		controlText = game.add.text(380, 400, "Controls\ngo here", {
+			...wordStyle,
+			fontSize: 72,
+		});
+		controlText.rotation = (Math.PI / 180) * 23;
+		controlText.anchor.setTo(0.5, 0.5);
+		controlText.kill();
+
 		feather = game.add.sprite(0, 0, "feather");
 		feather.anchor.setTo(0.125, 0.875);
 		game.input.mouse.capture = true;
 	};
 	update = () => {
-		if (playButt.input.pointerOver()) {
-			playButt.scale.setTo(1.1);
-			feather.rotation = (Math.PI / 180) * 23;
-			if (game.input.activePointer.leftButton.justPressed()) this.loadGame();
-		} else {
-			playButt.scale.setTo(1);
-			feather.rotation = 0;
-		}
+		[playButt, controls, back].forEach(s => {
+			if (s.input.pointerOver()) {
+				s.scale.setTo(1.1);
+				feather.rotation = (Math.PI / 180) * 23;
+				if (game.input.activePointer.leftButton.justPressed()) {
+					if (s == playButt) this.loadGame();
+					if (s == controls) {
+						playButt.kill();
+						back.exists = true;
+						controls.kill();
+						controlText.exists = true;
+					}
+					if (s == back) {
+						playButt.exists = true;
+						back.kill();
+						controls.exists = true;
+						controlText.kill();
+					}
+				}
+			} else if (
+				[playButt, controls, back].every(c => !c.input.pointerOver())
+			) {
+				s.scale.setTo(1);
+				feather.rotation = 0;
+			}
+		});
 		feather.position.setTo(game.input.x, game.input.y);
 	};
 
@@ -92,8 +126,6 @@ class GameOver extends Phaser.State {
 				speed = 0.5;
 				bubbles.forEach(b => b.destroy());
 				bubbles = [];
-				targets.forEach(t => t.destroy());
-				targets = [];
 				game.state.start("MainMenu");
 			}
 		} else {

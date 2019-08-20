@@ -59,16 +59,8 @@ class Meeting extends Phaser.State {
 		);
 		honks = honks.map(h => game.add.audio("honk" + h, 1));
 
-		timer = game.add.text(30, 50, "Meeting ends\nin: " + time, {
-			font: "Charter",
-			fontSize: 24,
-			fill: "#000",
-		});
-		livesText = game.add.text(680, 50, "Lives: " + lives, {
-			font: "Charter",
-			fontSize: 24,
-			fill: "#000",
-		});
+		timer = game.add.text(30, 50, "Meeting ends\nin: " + time, wordStyle);
+		livesText = game.add.text(680, 50, "Lives: " + lives, wordStyle);
 
 		chatter = game.add.audio("meetingAudio");
 		chatter.play("", 0, 0.3, true);
@@ -152,6 +144,7 @@ class Meeting extends Phaser.State {
 					if (l.body.y > game.world.height / 2 && l.style.fill != "white")
 						l.setStyle({ ...l.style, fill: "white" });
 					game.physics.arcade.moveToObject(l, bubbles[k], 400);
+					//kinda not fast enough
 					if (Phaser.Rectangle.contains(l.body, bubbles[k].x, bubbles[k].y)) {
 						l.body.velocity.setTo(0, 0);
 						bubbles[k].destroy();
@@ -190,9 +183,8 @@ class Meeting extends Phaser.State {
 		text,
 		x,
 		style = {
-			font: "Charter",
+			...wordStyle,
 			fontSize: 32,
-			fill: "black",
 		}
 	) => {
 		let letter = game.add.text(x, game.world.height * 0.1, text, style);

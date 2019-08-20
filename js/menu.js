@@ -2,6 +2,7 @@ var game = new Phaser.Game(800, 800, Phaser.AUTO, "content", true);
 
 var feather;
 var playButt;
+var honks = ["English", "French", "Hindi", "Russian", "Japan"];
 
 class MainMenu extends Phaser.State {
 	preload = () => {
@@ -15,7 +16,7 @@ class MainMenu extends Phaser.State {
 		game.load.onLoadStart.add(() => {}, this);
 		//loading state or cutscene?
 		// game.load.onFileComplete.add(fileComplete, this);
-		game.load.onLoadComplete.add(() => game.state.start("Play"), this);
+		game.load.onLoadComplete.add(() => game.state.start("Meeting"), this);
 
 		game.add.sprite(0, 0, "titleScreen");
 		game.add.sprite(0, 25, "title");
@@ -43,10 +44,11 @@ class MainMenu extends Phaser.State {
 	};
 
 	loadGame = () => {
-		["bgMeeting800", "gooseBoss", "vc", "bubble"].forEach(img =>
+		["bgMeeting", "gooseBoss", "vc", "bubble", "meetingTable"].forEach(img =>
 			game.load.image(img, img + ".png")
 		);
 		honks.forEach(h => game.load.audio("honk" + h, "honk" + h + ".mp3"));
+		game.load.audio("meetingAudio", "meeting.mp3");
 		game.load.start();
 	};
 }
@@ -56,12 +58,19 @@ class GameOver extends Phaser.State {
 	create = () => {
 		game.add.sprite(0, 0, "titleScreen");
 		game.add.sprite(0, 25, "title");
-		let scoreText = game.add.text(320, 320, "Score:\n" + lives, {
-			font: "Charter",
-			fontSize: 72,
-		});
+		let scoreText = game.add.text(
+			260,
+			300,
+			"You made it \n" +
+				Math.min(Math.round(game.time.totalElapsedSeconds() - start), time) +
+				" minutes\ninto your\nmeeting",
+			{
+				font: "Charter",
+				fontSize: 72,
+			}
+		);
 		scoreText.rotation = (Math.PI / 180) * 23;
-		againButt = game.add.text(280, 560, "Again?", {
+		againButt = game.add.text(200, 700, "Again?", {
 			font: "Charter",
 			fontSize: 72,
 		});
@@ -81,6 +90,10 @@ class GameOver extends Phaser.State {
 				start = 0;
 				interval = 3000;
 				speed = 0.5;
+				bubbles.forEach(b => b.destroy());
+				bubbles = [];
+				targets.forEach(t => t.destroy());
+				targets = [];
 				game.state.start("MainMenu");
 			}
 		} else {

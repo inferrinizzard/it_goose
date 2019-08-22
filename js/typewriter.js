@@ -1,4 +1,4 @@
-class Water extends Phaser.State {
+class TypeWriter extends Phaser.State {
 	create = () => {};
 	update = () => {};
 }

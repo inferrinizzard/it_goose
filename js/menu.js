@@ -16,8 +16,8 @@ class MainMenu extends Phaser.State {
 		);
 	};
 	create = () => {
-		game.scale.setUserScale(0.75);
-		game.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
+		// game.scale.setUserScale(0.75);
+		// game.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
 		game.load.onLoadStart.add(() => {
 			[feather, bg, title, playButt, controls].forEach(s => s.destroy());
 			game.add.text(200, 100, "Loading...", {

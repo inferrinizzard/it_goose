@@ -2,41 +2,45 @@ var honkButt;
 var honkKeys;
 var hkI = 0,
 	honkAnchor = 0;
-var max;
 var timer, livesText;
 var spawner;
-var start;
-var time = 90,
+var start,
+	time = 90,
 	lives = 5;
 var speed = 0.5,
 	interval = 3100;
 var bubbles = [],
 	letters = [],
 	words = [],
-	other = [],
 	pos = [0, 150, 325, 500, 650];
 var goose;
-var sawMove = true;
-var sawTick = 0;
-var sawJump = false;
-var chatter;
+var sawMove = true,
+	sawTick = 0,
+	sawJump = false;
+var chatter, chirp;
+var gooseAnim = ["Shame", "Angery", "Panic", "Angery"];
 
 class Meeting extends Phaser.State {
 	create = () => {
 		start = game.time.totalElapsedSeconds();
 		game.add.sprite(0, 0, "bgMeeting");
-		goose = game.add.sprite(580, 233, "gooseBoss");
+
+		goose = game.add.sprite(580, 240, "gooseEmotes");
+		["Angry", "Shame", "Shine", "Greed", "Panic"].forEach((e, k) =>
+			goose.animations.add(e, [2 * k, 2 * k + 1], 8, true)
+		);
+		goose.loadTexture("gStand");
 		goose.anchor.setTo(0.5, 0);
+
 		game.add.sprite(0, 0, "meetingTable");
 		pos.forEach(p => game.add.sprite(p, 650, "vc"));
 		game.physics.startSystem(Phaser.Physics.P2JS);
-		game.physics.p2.gravity.y = 500;
 
 		spawner = setTimeout(() => {
 			const callback = () => {
 				if (bubbles.length < 10) {
 					let bubble = game.add.sprite(
-						pos[Math.round(Math.random() * pos.length)],
+						pos[Math.round(Math.random() * pos.length)] + 75,
 						(Math.random() * game.world.height) / 4 +
 							(game.world.height * 3) / 4,
 						"bubble"
@@ -62,26 +66,37 @@ class Meeting extends Phaser.State {
 		timer = game.add.text(30, 50, "Meeting ends\nin: " + time, wordStyle);
 		livesText = game.add.text(680, 50, "Lives: " + lives, wordStyle);
 
-		chatter = game.add.audio("meetingAudio");
+		chatter = game.add.audio("meeting");
+		chirp = game.add.audio("chirp");
 		chatter.play("", 0, 0.3, true);
 	};
 
 	//game.sound.setDecodedCallback([ explosion, sword, blaster ], start, this);
 	update = () => {
-		goose.y = sawJump ? goose.y - 2 : Math.min(233, goose.y + 2);
+		goose.y = sawJump ? goose.y - 2 : Math.min(240, goose.y + 2);
 		if (sawMove)
 			goose.x = Math.sin((sawTick += game.time.physicsElapsed)) * 250 + 400;
 
 		if (250 - Math.abs(400 - goose.x) < 0.01) {
 			goose.scale.setTo(Math.sign(goose.x - 400), 1);
+			if (lives === 5) goose.loadTexture("gPoint225");
+
+			if (sawMove) {
+				if (lives === 5) goose.x -= (Math.sign(400 - goose.x) * 25) / 2;
+				setTimeout(() => {
+					sawMove = true;
+					this.swapGoose(lives === 5 ? "gStand" : gooseAnim[4 - lives]);
+					if (lives === 5) goose.x += (Math.sign(400 - goose.x) * 25) / 2;
+				}, 2000);
+			}
 			sawMove = false;
-			setTimeout(() => (sawMove = true), 2000);
 		}
 
-		timer.text =
-			"Meeting ends\nin: " +
-			(time - Math.floor(game.time.totalElapsedSeconds() - start)) +
-			" minutes";
+		if (lives > 0)
+			timer.text =
+				"Meeting ends\nin: " +
+				(time - Math.floor(game.time.totalElapsedSeconds() - start)) +
+				" minutes";
 		if (
 			time - Math.floor(game.time.totalElapsedSeconds() - start) <= 0 ||
 			lives <= 0
@@ -94,7 +109,7 @@ class Meeting extends Phaser.State {
 			});
 			words = [];
 			bubbles = [];
-			GOScreen = true;
+			goose.loadTexture("gEXangery215");
 			// game.state.start("MainMenu");
 			chatter.stop();
 			clearTimeout(spawner);
@@ -108,6 +123,7 @@ class Meeting extends Phaser.State {
 					b.destroy();
 					livesText.text = "Lives: " + --lives;
 					bubbles.splice(k, 1);
+					this.swapGoose(gooseAnim[4 - lives]);
 					return;
 				}
 			}
@@ -120,6 +136,7 @@ class Meeting extends Phaser.State {
 					honkAnchor + hkI * 32
 				)
 			);
+			chirp.play("", 0, 0.02);
 			if (hkI == honkKeys.length - 1) {
 				letters.forEach(l => {
 					game.physics.arcade.enable(l, false);
@@ -129,9 +146,9 @@ class Meeting extends Phaser.State {
 				(words.length < bubbles.length ? words : other).push([...letters]);
 				letters = [];
 				chatter.volume = 0.15;
-				console.log(chatter.volume);
-
-				setTimeout(() => (chatter.volume = 0.3), 300);
+				setTimeout(() => {
+					chatter.volume = 0.3;
+				}, 300);
 				this.honk();
 			}
 			hkI = (hkI + 1) % honkKeys.length;
@@ -176,9 +193,24 @@ class Meeting extends Phaser.State {
 	};
 
 	honk = () => {
+		if (!sawJump) {
+			goose.loadTexture("gHonk215");
+			goose.x -= (Math.sign(400 - goose.x) * 15) / 2;
+			setTimeout(() => {
+				sawJump = false;
+				this.swapGoose(lives === 5 ? "gStand" : gooseAnim[4 - lives]);
+				goose.x += (Math.sign(400 - goose.x) * 15) / 2;
+			}, 100);
+		}
 		sawJump = true;
-		setTimeout(() => (sawJump = false), 100);
 		honks[Math.floor(Math.random() * honks.length)].play();
+	};
+
+	swapGoose = anim => {
+		if (gooseAnim.includes(anim)) {
+			goose.loadTexture("gooseEmotes");
+			goose.animations.play(anim);
+		} else goose.loadTexture(anim);
 	};
 
 	spawnText = (

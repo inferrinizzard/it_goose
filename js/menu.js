@@ -89,15 +89,22 @@ class MainMenu extends Phaser.State {
 			"stressBar",
 		].forEach(img => game.load.image(img, img + ".png"));
 		game.load.path = "./assets/goose/";
-		["gBoss", "gDed", "gEXangery215", "gPoint225", "gHonk215"].forEach(img =>
-			game.load.image(img, img + ".png")
-		);
-		["gAngry", "gGreed", "gPanic", "gShame", "gShine"].forEach(img =>
-			game.load.spritesheet(img, img, 200, 200)
-		);
+		[
+			"gBoss",
+			"gDed",
+			"gEXangery215",
+			"gPoint225",
+			"gHonk215",
+			"gStand",
+		].forEach(img => game.load.image(img, img + ".png"));
+		game.load.spritesheet("gooseEmotes", "gooseEmotes.png", 200, 200, 10);
+
 		game.load.path = "./assets/audio/";
 		honks.forEach(h => game.load.audio("honk" + h, "honk" + h + ".mp3"));
-		game.load.audio("meetingAudio", "meeting.mp3");
+		["meeting", "chirp"].forEach(a => game.load.audio(a, a + ".mp3"));
+		new Array(5)
+			.fill("tw")
+			.forEach((tw, k) => game.load.audio(tw + k, tw + k + ".mp3"));
 		game.load.path = "./assets/";
 
 		game.load.start();

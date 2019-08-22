@@ -94,9 +94,11 @@ class Meeting extends Phaser.State {
 			});
 			words = [];
 			bubbles = [];
-			game.state.start("GameOver");
+			GOScreen = true;
+			// game.state.start("MainMenu");
 			chatter.stop();
 			clearTimeout(spawner);
+			return;
 		}
 
 		bubbles.forEach((b, k) => {

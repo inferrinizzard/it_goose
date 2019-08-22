@@ -11,7 +11,7 @@ class MainMenu extends Phaser.State {
 	preload = () => {
 		game.load.path = "./assets/";
 
-		["title", "titleScreen", "featherPointer"].forEach(img =>
+		["title", "titleScreenCleaned", "featherPointer"].forEach(img =>
 			game.load.image(img, img + ".png")
 		);
 	};
@@ -21,10 +21,10 @@ class MainMenu extends Phaser.State {
 		// game.load.onFileComplete.add(fileComplete, this);
 		game.load.onLoadComplete.add(() => game.state.start("Meeting"), this);
 
-		game.add.sprite(0, 0, "titleScreen");
+		game.add.sprite(0, 0, "titleScreenCleaned");
 		game.add.sprite(0, 25, "title");
-		playButt = game.add.text(350, 380, "Play", { ...wordStyle, fontSize: 72 });
-		controls = game.add.text(300, 500, "Controls", {
+		playButt = game.add.text(300, 430, "Play", { ...wordStyle, fontSize: 72 });
+		controls = game.add.text(250, 550, "Controls", {
 			...wordStyle,
 			fontSize: 72,
 		});
@@ -36,7 +36,7 @@ class MainMenu extends Phaser.State {
 		});
 		back.kill();
 
-		controlText = game.add.text(380, 400, "Controls\ngo here", {
+		controlText = game.add.text(330, 450, "Controls\ngo here", {
 			...wordStyle,
 			fontSize: 72,
 		});
@@ -79,8 +79,21 @@ class MainMenu extends Phaser.State {
 	};
 
 	loadGame = () => {
-		["bgMeeting", "gooseBoss", "vc", "bubble", "meetingTable"].forEach(img =>
+		[
+			"bgMeeting",
+			"meetingTable",
+			"vc",
+			"bubble",
+			"feather",
+			"paper",
+			"stressBar",
+		].forEach(img => game.load.image(img, img + ".png"));
+		game.load.path = "./assets/goose/";
+		["gBoss", "gDed", "gEXangery215", "gPoint225", "gHonk215"].forEach(img =>
 			game.load.image(img, img + ".png")
+		);
+		["gAngry", "gGreed", "gPanic", "gShame", "gShine"].forEach(img =>
+			game.load.spritesheet(img, img, 200, 200)
 		);
 		game.load.path = "./assets/audio/";
 		honks.forEach(h => game.load.audio("honk" + h, "honk" + h + ".mp3"));

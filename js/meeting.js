@@ -12,8 +12,9 @@ var speed = 0.5,
 var bubbles = [],
 	letters = [],
 	words = [],
+	other = [],
 	pos = [0, 150, 325, 500, 650];
-var goose;
+var goose, table;
 var sawMove = true,
 	sawTick = 0,
 	sawJump = false;
@@ -32,9 +33,9 @@ class Meeting extends Phaser.State {
 		goose.loadTexture("gStand");
 		goose.anchor.setTo(0.5, 0);
 
-		game.add.sprite(0, 0, "meetingTable");
+		table = game.add.sprite(0, 0, "meetingTable");
 		pos.forEach(p => game.add.sprite(p, 650, "vc"));
-		game.physics.startSystem(Phaser.Physics.P2JS);
+		game.physics.startSystem(Phaser.Physics.ARCADE);
 
 		spawner = setTimeout(() => {
 			const callback = () => {
@@ -78,7 +79,8 @@ class Meeting extends Phaser.State {
 			goose.x = Math.sin((sawTick += game.time.physicsElapsed)) * 250 + 400;
 
 		if (250 - Math.abs(400 - goose.x) < 0.01) {
-			goose.scale.setTo(Math.sign(goose.x - 400), 1);
+			goose.scale.x *=
+				Math.sign(goose.scale.x) === Math.sign(goose.x - 400) ? 1 : -1;
 			if (lives === 5) goose.loadTexture("gPoint225");
 
 			if (sawMove) {
@@ -97,25 +99,31 @@ class Meeting extends Phaser.State {
 				"Meeting ends\nin: " +
 				(time - Math.floor(game.time.totalElapsedSeconds() - start)) +
 				" minutes";
-		if (
-			time - Math.floor(game.time.totalElapsedSeconds() - start) <= 0 ||
-			lives <= 0
-		) {
-			honks[Math.floor(Math.random() * honks.length)].play();
-			bubbles.forEach(b => b.destroy());
-			words.forEach(w => {
-				w.forEach(l => l.destroy());
-				w = [];
-			});
-			words = [];
-			bubbles = [];
-			goose.loadTexture("gEXangery215");
-			// game.state.start("MainMenu");
-			chatter.stop();
-			clearTimeout(spawner);
-			return;
-		}
-
+		if (lives <= 0) {
+			if (lives === 0) {
+				honks[Math.floor(Math.random() * honks.length)].play();
+				bubbles.forEach(b => b.destroy());
+				words.forEach(w => {
+					w.forEach(l => l.destroy());
+					w = [];
+				});
+				words = [];
+				bubbles = [];
+				chatter.stop();
+				clearTimeout(spawner);
+				table.destroy();
+				goose.loadTexture("gEXangery215");
+				lives--;
+				setTimeout(() => lives--, 15000);
+				return;
+			} else if (lives === -1) {
+				goose.loadTexture("gEXangery215");
+				goose.scale.x += 0.01;
+				goose.scale.y += 0.01;
+			} else {
+				goose.destroy();
+			}
+		} else if (time - Math.floor(game.time.totalElapsedSeconds() - start) <= 0);
 		bubbles.forEach((b, k) => {
 			if (b && b.body) {
 				b.body.y -= speed;
@@ -124,6 +132,7 @@ class Meeting extends Phaser.State {
 					livesText.text = "Lives: " + --lives;
 					bubbles.splice(k, 1);
 					this.swapGoose(gooseAnim[4 - lives]);
+					chirp.play("", 0, 0.3);
 					return;
 				}
 			}

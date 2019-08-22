@@ -104,7 +104,7 @@ class MainMenu extends Phaser.State {
 		["meeting", "chirp"].forEach(a => game.load.audio(a, a + ".mp3"));
 		new Array(5)
 			.fill("tw")
-			.forEach((tw, k) => game.load.audio(tw + k, tw + k + ".mp3"));
+			.forEach((tw, k) => game.load.audio(tw + (k + 1), tw + (k + 1) + ".mp3"));
 		game.load.path = "./assets/";
 
 		game.load.start();

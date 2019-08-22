@@ -5,7 +5,7 @@ var hkI = 0,
 var timer, livesText;
 var spawner;
 var start,
-	time = 90,
+	time = 10,
 	lives = 5;
 var speed = 0.5,
 	interval = 3100;
@@ -19,7 +19,7 @@ var sawMove = true,
 	sawTick = 0,
 	sawJump = false;
 var chatter, chirp;
-var gooseAnim = ["Shame", "Angery", "Panic", "Angery"];
+var gooseAnim = ["Shame", "Angery", "Panic", "Angery", "Greed", "Shine"];
 
 class Meeting extends Phaser.State {
 	create = () => {
@@ -27,7 +27,7 @@ class Meeting extends Phaser.State {
 		game.add.sprite(0, 0, "bgMeeting");
 
 		goose = game.add.sprite(580, 240, "gooseEmotes");
-		["Angry", "Shame", "Shine", "Greed", "Panic"].forEach((e, k) =>
+		["Angry", "Shame", "Greed", "Shine", "Panic"].forEach((e, k) =>
 			goose.animations.add(e, [2 * k, 2 * k + 1], 8, true)
 		);
 		goose.loadTexture("gStand");
@@ -72,29 +72,30 @@ class Meeting extends Phaser.State {
 		chatter.play("", 0, 0.3, true);
 	};
 
-	//game.sound.setDecodedCallback([ explosion, sword, blaster ], start, this);
 	update = () => {
 		goose.y = sawJump ? goose.y - 2 : Math.min(240, goose.y + 2);
-		if (sawMove)
-			goose.x = Math.sin((sawTick += game.time.physicsElapsed)) * 250 + 400;
+		if (start) {
+			if (sawMove)
+				goose.x = Math.sin((sawTick += game.time.physicsElapsed)) * 250 + 400;
 
-		if (250 - Math.abs(400 - goose.x) < 0.01) {
-			goose.scale.x *=
-				Math.sign(goose.scale.x) === Math.sign(goose.x - 400) ? 1 : -1;
-			if (lives === 5) goose.loadTexture("gPoint225");
+			if (250 - Math.abs(400 - goose.x) < 0.01) {
+				goose.scale.x *=
+					Math.sign(goose.scale.x) === Math.sign(goose.x - 400) ? 1 : -1;
+				if (lives === 5) goose.loadTexture("gPoint225");
 
-			if (sawMove) {
-				if (lives === 5) goose.x -= (Math.sign(400 - goose.x) * 25) / 2;
-				setTimeout(() => {
-					sawMove = true;
-					this.swapGoose(lives === 5 ? "gStand" : gooseAnim[4 - lives]);
-					if (lives === 5) goose.x += (Math.sign(400 - goose.x) * 25) / 2;
-				}, 2000);
+				if (sawMove) {
+					if (lives === 5) goose.x -= (Math.sign(400 - goose.x) * 25) / 2;
+					setTimeout(() => {
+						sawMove = true;
+						this.swapGoose(lives === 5 ? "gStand" : gooseAnim[4 - lives]);
+						if (lives === 5) goose.x += (Math.sign(400 - goose.x) * 25) / 2;
+					}, 2000);
+				}
+				sawMove = false;
 			}
-			sawMove = false;
 		}
 
-		if (lives > 0)
+		if (lives > 0 && start)
 			timer.text =
 				"Meeting ends\nin: " +
 				(time - Math.floor(game.time.totalElapsedSeconds() - start)) +
@@ -112,18 +113,39 @@ class Meeting extends Phaser.State {
 				chatter.stop();
 				clearTimeout(spawner);
 				table.destroy();
-				goose.loadTexture("gEXangery215");
+				this.swapGoose("gEXangery215");
 				lives--;
 				setTimeout(() => lives--, 15000);
 				return;
 			} else if (lives === -1) {
-				goose.loadTexture("gEXangery215");
+				this.swapGoose("gEXangery215");
 				goose.scale.x += 0.01;
 				goose.scale.y += 0.01;
 			} else {
 				goose.destroy();
 			}
-		} else if (time - Math.floor(game.time.totalElapsedSeconds() - start) <= 0);
+		} else if (
+			time - Math.floor(game.time.totalElapsedSeconds() - start) <=
+			0
+		) {
+			if (start > 0) {
+				honks[Math.floor(Math.random() * honks.length)].play();
+				bubbles.forEach(b => b.destroy());
+				words.forEach(w => {
+					w.forEach(l => l.destroy());
+					w = [];
+				});
+				words = [];
+				bubbles = [];
+				chatter.stop();
+				clearTimeout(spawner);
+				table.destroy();
+				this.swapGoose(lives > 2 ? "Greed" : "Shine");
+				goose.scale.setTo(2, 2);
+				start = 0;
+			} else if (!start) {
+			}
+		}
 		bubbles.forEach((b, k) => {
 			if (b && b.body) {
 				b.body.y -= speed;
@@ -203,7 +225,7 @@ class Meeting extends Phaser.State {
 
 	honk = () => {
 		if (!sawJump) {
-			goose.loadTexture("gHonk215");
+			this.swapGoose("gHonk215");
 			goose.x -= (Math.sign(400 - goose.x) * 15) / 2;
 			setTimeout(() => {
 				sawJump = false;

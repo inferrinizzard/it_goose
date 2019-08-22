@@ -1,11 +1,11 @@
 var honkButt;
 var honkKeys;
-var hkI = 0,
-	honkAnchor = 0;
+var hkI = 0;
+// honkAnchor = 0;
 var timer, livesText;
 var spawner;
 var start,
-	time = 10,
+	time = 90,
 	lives = 5;
 var speed = 0.5,
 	interval = 3100;
@@ -22,6 +22,7 @@ var chatter, chirp;
 var gooseAnim = ["Shame", "Angery", "Panic", "Angery", "Greed", "Shine"];
 
 class Meeting extends Phaser.State {
+	honkAnchor = 0;
 	create = () => {
 		start = game.time.totalElapsedSeconds();
 		game.add.sprite(0, 0, "bgMeeting");
@@ -36,6 +37,13 @@ class Meeting extends Phaser.State {
 		table = game.add.sprite(0, 0, "meetingTable");
 		pos.forEach(p => game.add.sprite(p, 650, "vc"));
 		game.physics.startSystem(Phaser.Physics.ARCADE);
+
+		let honkIntro = game.add.text(400, 30, "Try a honk~", {
+			...wordStyle,
+			fontSize: 64,
+		});
+		honkIntro.anchor.setTo(0.5, 0.5);
+		setTimeout(() => honkIntro.destroy(), 5000);
 
 		spawner = setTimeout(() => {
 			const callback = () => {
@@ -160,11 +168,11 @@ class Meeting extends Phaser.State {
 			}
 		});
 		if (honkKeys[hkI].justDown) {
-			if (hkI == 0) honkAnchor = Math.random() * game.world.width;
+			if (hkI == 0) this.honkAnchor = Math.random() * game.world.width;
 			letters.push(
 				this.spawnText(
 					String.fromCharCode(honkKeys[hkI].keyCode),
-					honkAnchor + hkI * 32
+					this.honkAnchor + hkI * 32
 				)
 			);
 			chirp.play("", 0, 0.02);

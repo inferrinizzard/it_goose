@@ -16,13 +16,25 @@ class MainMenu extends Phaser.State {
 		);
 	};
 	create = () => {
-		// game.load.onLoadStart.add(() => {}, this);
+		game.scale.setUserScale(0.75);
+		game.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
+		game.load.onLoadStart.add(() => {
+			[feather, bg, title, playButt, controls].forEach(s => s.destroy());
+			game.add.text(200, 100, "Loading...", {
+				...wordStyle,
+				fontSize: 96,
+				fill: "white",
+			});
+			let spinner = game.add.sprite(400, 400, "featherPointer");
+			spinner.anchor.setTo(0.5, 0.5);
+			setInterval(() => (spinner.rotation += 0.01), 1);
+		}, this);
 		//loading state or cutscene?
 		// game.load.onFileComplete.add(fileComplete, this);
 		game.load.onLoadComplete.add(() => game.state.start("Meeting"), this);
 
-		game.add.sprite(0, 0, "titleScreenCleaned");
-		game.add.sprite(0, 25, "title");
+		let bg = game.add.sprite(0, 0, "titleScreenCleaned");
+		let title = game.add.sprite(0, 25, "title");
 		playButt = game.add.text(300, 430, "Play", { ...wordStyle, fontSize: 72 });
 		controls = game.add.text(250, 550, "Controls", {
 			...wordStyle,
@@ -36,7 +48,7 @@ class MainMenu extends Phaser.State {
 		});
 		back.kill();
 
-		controlText = game.add.text(330, 450, "Controls\ngo here", {
+		controlText = game.add.text(300, 450, "Use the keys\n'H' 'O' 'N' 'K'", {
 			...wordStyle,
 			fontSize: 72,
 		});
@@ -115,5 +127,6 @@ class MainMenu extends Phaser.State {
 // start = 0;
 // interval = 3000;
 // speed = 0.5;
-// bubbles.forEach(b => b.destroy());
-// bubbles = [];
+
+//todo: stress bar, typewriter,  particles
+//shakey angery, rotate bubbles?, scale the second angery

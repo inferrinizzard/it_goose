@@ -128,5 +128,5 @@ class MainMenu extends Phaser.State {
 // interval = 3000;
 // speed = 0.5;
 
-//todo: stress bar, typewriter,  particles
-//shakey angery, rotate bubbles?, scale the second angery
+//todo: typewriter,  particles, restart mechanics
+//shakey angery, rotate bubbles?

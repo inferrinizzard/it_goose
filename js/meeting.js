@@ -13,6 +13,7 @@ var bubbles = [],
 	letters = [],
 	words = [],
 	other = [],
+	stress = [],
 	pos = [0, 150, 325, 500, 650];
 var goose, table;
 var sawMove = true,
@@ -43,7 +44,12 @@ class Meeting extends Phaser.State {
 			fontSize: 64,
 		});
 		honkIntro.anchor.setTo(0.5, 0.5);
-		setTimeout(() => honkIntro.destroy(), 5000);
+		setTimeout(() => {
+			honkIntro.destroy();
+			let stressBar = game.add.sprite(200, 5, "stressBar");
+			stressBar.scale.y = 0.5;
+			stressBar.tint = 0x777700;
+		}, 5000);
 
 		spawner = setTimeout(() => {
 			const callback = () => {
@@ -103,7 +109,10 @@ class Meeting extends Phaser.State {
 			}
 		}
 
-		if (lives > 0 && start)
+		if (
+			lives > 0 &&
+			time - Math.floor(game.time.totalElapsedSeconds()) - start > 0
+		)
 			timer.text =
 				"Meeting ends\nin: " +
 				(time - Math.floor(game.time.totalElapsedSeconds() - start)) +
@@ -162,6 +171,7 @@ class Meeting extends Phaser.State {
 					livesText.text = "Lives: " + --lives;
 					bubbles.splice(k, 1);
 					this.swapGoose(gooseAnim[4 - lives]);
+					if (lives === 1) goose.scale.setTo(1.2, 1.2);
 					chirp.play("", 0, 0.3);
 					return;
 				}

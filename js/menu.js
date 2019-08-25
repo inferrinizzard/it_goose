@@ -35,7 +35,8 @@ class MainMenu extends Phaser.State {
 			spinner.anchor.setTo(0.5, 0.5);
 			setInterval(() => (spinner.rotation += 0.01), 1);
 		}, this);
-		game.load.onLoadComplete.add(() => game.state.start("Meeting"), this);
+		// game.load.onLoadComplete.add(() => game.state.start("Meeting"), this);
+		game.load.onLoadComplete.add(() => game.state.start("TypeWriter"), this);
 
 		let bg = game.add.sprite(0, 0, "titleScreenCleaned");
 		let title = game.add.sprite(0, 25, "title");

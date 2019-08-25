@@ -1,35 +1,36 @@
-var start = 0;
-var time = 90;
+var angered = 0;
 class Meeting extends Phaser.State {
-	honkKeys;
-	honkButt;
-	hkI;
-	honkAnchor;
-	timer;
-	livesText;
-	spawner;
-	lives;
-	speed;
-	interval;
-	bubbles;
-	letters;
-	words;
-	other;
-	stress;
-	pos;
-	goose;
-	table;
-	sawMove;
-	sawTick;
-	sawJump;
-	sawAnim;
-	chatter;
-	chirp;
-	startOver;
-	gooseAnim = ["Shame", "Angery", "Panic", "Angery", "Greed", "Shine"];
+	honkKeys; //[H, O, N, K] keys
+	honkButt; // space to honk
+	hkI; // next index of HONK to pressed
+	honkAnchor; // where the honk word is placed before release
+	timer; // top-left text
+	livesText; // top-right text
+	spawner; // generates bubble timeout
+	time; // meeting clock time
+	lives; // lives
+	speed; // speed of bubble rise
+	interval; // speed of bubble spawn
+	bubbles; // bubble container
+	letters; // holds 'h o n k' before release
+	words; // holds active honks
+	other; // falling extra honks
+	stress; // stress bar
+	pos; // x-pos of bubble spawns
+	goose; // main char
+	table; // midground
+	sawMove; // if sin move
+	sawTick; // sin move counter
+	sawJump; // jump on honk
+	sawAnim; // switch sprite timeout
+	chatter; // bg noise
+	chirp; // real honk sound
+	startOver; // restart button
+	gooseAnim = ["Shame", "Angery", "Panic", "Angery", "Greed", "Shine"]; // emotes
 	init = () => {
 		this.hkI = 0;
 		this.honkAnchor = 0;
+		this.time = 90;
 		this.lives = 5;
 		this.speed = 0.5;
 		this.interval = 3100;
@@ -44,7 +45,6 @@ class Meeting extends Phaser.State {
 		this.sawJump = false;
 	};
 	create = () => {
-		start = game.time.totalElapsedSeconds();
 		game.add.sprite(0, 0, "bgMeeting");
 
 		this.goose = game.add.sprite(580, 240, "gooseEmotes");
@@ -97,7 +97,12 @@ class Meeting extends Phaser.State {
 		);
 		honks = honks.map(h => game.add.audio("honk" + h, 1));
 
-		this.timer = game.add.text(30, 50, "Meeting ends\nin: " + time, wordStyle);
+		this.timer = game.add.text(
+			30,
+			50,
+			"Meeting ends\nin: " + this.time,
+			wordStyle
+		);
 		this.livesText = game.add.text(680, 50, "Lives: " + this.lives, wordStyle);
 
 		this.chatter = game.add.audio("meeting");
@@ -109,7 +114,7 @@ class Meeting extends Phaser.State {
 		this.goose.y = this.sawJump
 			? this.goose.y - 2
 			: Math.min(240, this.goose.y + 2);
-		if (start) {
+		if (this.time > 0) {
 			if (this.sawMove)
 				this.goose.x =
 					Math.sin((this.sawTick += game.time.physicsElapsed)) * 250 + 400;
@@ -138,14 +143,9 @@ class Meeting extends Phaser.State {
 			}
 		}
 
-		if (
-			this.lives > 0 &&
-			time - Math.floor(game.time.totalElapsedSeconds()) - start > 0
-		)
+		if (this.lives > 0 && (this.time -= game.time.elapsedMS / 1000) > 0)
 			this.timer.text =
-				"Meeting ends\nin: " +
-				(time - Math.floor(game.time.totalElapsedSeconds() - start)) +
-				" minutes";
+				"Meeting ends\nin: " + Math.floor(this.time) + " minutes";
 		if (this.lives <= 0) {
 			if (this.lives === 0) {
 				honks[Math.floor(Math.random() * honks.length)].play();
@@ -190,16 +190,13 @@ class Meeting extends Phaser.State {
 					this.startOver.scale.setTo(1.1);
 					if (game.input.activePointer.leftButton.justPressed()) {
 						this.game.state.restart(true);
-						time = 90;
-						start = 0;
+						angered++;
+						return;
 					}
 				} else this.startOver.scale.setTo(1);
 			}
-		} else if (
-			time - Math.floor(game.time.totalElapsedSeconds() - start) <=
-			0
-		) {
-			if (start > 0) {
+		} else if (this.time <= 0) {
+			if (Math.round(this.time) === 0) {
 				honks[Math.floor(Math.random() * honks.length)].play();
 				this.bubbles.forEach(b => b.destroy());
 				this.words.forEach(w => {
@@ -214,8 +211,9 @@ class Meeting extends Phaser.State {
 				this.table.destroy();
 				this.swapGoose(this.lives > 2 ? "Greed" : "Shine");
 				this.goose.scale.setTo(2, 2);
-				start = 0;
-			} else if (!start) {
+				this.time = -1;
+				return;
+			} else if (this.time === -1) {
 			}
 		}
 		this.bubbles.forEach((b, k) => {
@@ -236,9 +234,14 @@ class Meeting extends Phaser.State {
 			if (this.hkI == 0)
 				this.honkAnchor = Math.random() * (game.world.width - 32 * 4);
 			this.letters.push(
-				this.spawnText(
+				game.add.text(
+					this.honkAnchor + this.hkI * 32,
+					game.world.height * 0.1,
 					String.fromCharCode(this.honkKeys[this.hkI].keyCode),
-					this.honkAnchor + this.hkI * 32
+					{
+						...wordStyle,
+						fontSize: 32,
+					}
 				)
 			);
 			this.chirp.play("", 0, 0.02);
@@ -325,19 +328,11 @@ class Meeting extends Phaser.State {
 		honks[Math.floor(Math.random() * honks.length)].play();
 	};
 
+	// loads in new goose emote anim/still
 	swapGoose = anim => {
 		if (this.gooseAnim.includes(anim)) {
 			this.goose.loadTexture("gooseEmotes");
 			this.goose.animations.play(anim);
 		} else this.goose.loadTexture(anim);
 	};
-
-	spawnText = (
-		text,
-		x,
-		style = {
-			...wordStyle,
-			fontSize: 32,
-		}
-	) => game.add.text(x, game.world.height * 0.1, text, style);
 }

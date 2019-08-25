@@ -105,6 +105,7 @@ class MainMenu extends Phaser.State {
 	};
 
 	loadGame = () => {
+		game.load.path = "./assets/";
 		[
 			"bgMeeting",
 			"meetingTable",

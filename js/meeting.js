@@ -26,6 +26,7 @@ class Meeting extends Phaser.State {
 	chatter; // bg noise
 	chirp; // real honk sound
 	startOver; // restart button
+	emitter;
 	gooseAnim = ["Shame", "Angery", "Panic", "Angery", "Greed", "Shine"]; // emotes
 	init = () => {
 		this.hkI = 0;
@@ -108,6 +109,11 @@ class Meeting extends Phaser.State {
 		this.chatter = game.add.audio("meeting");
 		this.chirp = game.add.audio("chirp");
 		this.chatter.play("", 0, 0.3, true);
+
+		this.emitter = game.add.emitter(400, 0);
+		this.emitter.makeParticles(["feather", "paper"]);
+		this.emitter.width = 800;
+		this.emitter.gravity = 800;
 	};
 
 	update = () => {
@@ -226,6 +232,7 @@ class Meeting extends Phaser.State {
 					this.swapGoose(this.gooseAnim[4 - this.lives]);
 					if (this.lives === 1) this.goose.scale.setTo(1.2, 1.2);
 					this.chirp.play("", 0, 0.3);
+					this.emitter.start(true, 2000, null, 20);
 					return;
 				}
 			}

@@ -26,17 +26,19 @@ class MainMenu extends Phaser.State {
 			[this.feather, bg, title, this.playButt, this.controls].forEach(s =>
 				s.destroy()
 			);
-			game.add.text(200, 100, "Loading...", {
-				...wordStyle,
-				fontSize: 96,
-				fill: "white",
-			});
+			game.add
+				.text(400, 100, "Loading...", {
+					...wordStyle,
+					fontSize: 96,
+					fill: "white",
+				})
+				.anchor.setTo(0.5, 0);
 			let spinner = game.add.sprite(400, 400, "featherPointer");
 			spinner.anchor.setTo(0.5, 0.5);
 			setInterval(() => (spinner.rotation += 0.01), 1);
 		}, this);
-		// game.load.onLoadComplete.add(() => game.state.start("Meeting"), this);
-		game.load.onLoadComplete.add(() => game.state.start("TypeWriter"), this);
+		game.load.onLoadComplete.add(() => game.state.start("Meeting"), this);
+		// game.load.onLoadComplete.add(() => game.state.start("TypeWriter"), this);
 
 		let bg = game.add.sprite(0, 0, "titleScreenCleaned");
 		let title = game.add.sprite(0, 25, "title");
@@ -116,15 +118,11 @@ class MainMenu extends Phaser.State {
 			"paper",
 			"stressBar",
 		].forEach(img => game.load.image(img, img + ".png"));
+
 		game.load.path = "./assets/goose/";
-		[
-			"gBoss",
-			"gDed",
-			"gEXangery215",
-			"gPoint225",
-			"gHonk215",
-			"gStand",
-		].forEach(img => game.load.image(img, img + ".png"));
+		["Boss", "Ded", "EXangery215", "Point225", "Honk215", "Stand"].forEach(
+			img => game.load.image("g" + img, "g" + img + ".png")
+		);
 		game.load.spritesheet("gooseEmotes", "gooseEmotes.png", 200, 200, 10);
 
 		game.load.path = "./assets/audio/";

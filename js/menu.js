@@ -118,6 +118,7 @@ class MainMenu extends Phaser.State {
 			"feather",
 			"paper",
 			"stressBar",
+			"typewriterBG",
 		].forEach(img => game.load.image(img, img + ".png"));
 
 		game.load.path = "./assets/goose/";

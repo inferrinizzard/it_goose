@@ -193,11 +193,16 @@ class Meeting extends Phaser.State {
 					fill: "#FFF",
 					fontSize: 72,
 				});
-				this.startOver = this.game.add.text(400, 600, "Start over?", {
-					...wordStyle,
-					fill: "#FFF",
-					fontSize: 72,
-				});
+				this.startOver = this.game.add.text(
+					400,
+					600,
+					angered <= 0 ? "Start over?" : "Continue?",
+					{
+						...wordStyle,
+						fill: "#FFF",
+						fontSize: 72,
+					}
+				);
 				this.startOver.inputEnabled = true;
 				this.startOver.anchor.setTo(0.5, 0.5);
 				game.input.mouse.capture = true;
@@ -207,8 +212,8 @@ class Meeting extends Phaser.State {
 				if (this.startOver.input.pointerOver()) {
 					this.startOver.scale.setTo(1.1);
 					if (game.input.activePointer.leftButton.justPressed()) {
-						this.game.state.restart(true);
-						angered++;
+						if (angered++ <= 0) game.state.restart(true);
+						else game.state.start("TypeWriter", true);
 						return;
 					}
 				} else this.startOver.scale.setTo(1);
@@ -296,8 +301,11 @@ class Meeting extends Phaser.State {
 				if (l && l.body && !destroy && this.bubbles[k]) {
 					if (l.body.y > game.world.height / 2 && l.style.fill != "white")
 						l.setStyle({ ...l.style, fill: "white" });
-					game.physics.arcade.moveToObject(l, this.bubbles[k], 400);
-					//kinda not fast enough
+					game.physics.arcade.moveToObject(
+						l,
+						this.bubbles[k],
+						400 * (1 + (5 - this.lives) / 5)
+					);
 					if (
 						Phaser.Rectangle.contains(
 							l.body,

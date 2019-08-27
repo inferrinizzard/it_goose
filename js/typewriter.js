@@ -4,17 +4,20 @@ var honkKeys;
 var letters = [];
 var hlI = 0;
 var speed,
-	interval = 300,
+	interval = 500,
 	iMult = 6,
-	fallSpeed = 4;
+	fallSpeed = 2;
 var score = 0;
 var scoreText;
 var missed = [];
 var bar;
 var printText = [""];
+var nums = 0;
+var end;
 
 class TypeWriter extends Phaser.State {
 	create = () => {
+		game.add.sprite(0, 0, "typewriterBG");
 		honkKeys = honkLetters.map(k =>
 			game.input.keyboard.addKey(k.charCodeAt(0))
 		);
@@ -23,18 +26,13 @@ class TypeWriter extends Phaser.State {
 				let letter = game.add.text(hlI * 64 + 400 - 96, 50, honkLetters[hlI], {
 					...wordStyle,
 					fontSize: 64,
-					fill: "#FFF",
 				});
 				letter.anchor.setTo(0.5, 0.5);
 				letters.push({ sprite: letter, letter: hlI });
 				game.physics.arcade.enable(letter);
 				hlI = Math.floor(Math.random() * honkLetters.length);
 
-				spawnerT = setTimeout(
-					callback,
-					// Math.ceil(Math.random() * iMult) * interval
-					interval
-				);
+				if (nums++ < 100) spawnerT = setTimeout(callback, interval);
 			};
 			spawnerT = setTimeout(callback, interval);
 		}, interval);
@@ -45,13 +43,25 @@ class TypeWriter extends Phaser.State {
 			fill: "#FFF",
 		});
 
-		bar = game.add.sprite(400, 650, "stressBar");
+		bar = game.add.sprite(400, 450, "stressBar");
 		bar.anchor.setTo(0.5, 0.5);
+		bar.tint = 0xff3300;
+		bar.scale.setTo(1, 1);
 
 		honks = honks.map(h => game.add.audio("honk" + h, 1));
 		new Array(5).fill("tw").forEach((tw, k) => game.add.audio(tw + (k + 1)));
+		end = game.add.text(400, 30, "");
+		end.anchor.setTo(0.5, 0);
 	};
 	update = () => {
+		if (nums >= 100) {
+			bar.destroy();
+			letters.forEach(l => l.sprite.destroy());
+		}
+		if (nums >= 100) {
+			end.text = "Meeting notes:\n" + printText.join("\n");
+			return;
+		}
 		[letters, missed].forEach(n =>
 			n.forEach(l => (l.sprite.body.y += fallSpeed))
 		);
@@ -63,12 +73,19 @@ class TypeWriter extends Phaser.State {
 				bar.getBounds()
 			)
 		) {
-			let deletter = letters.shift().sprite;
+			let deletter = letters.shift();
+			let delSprite = deletter.sprite;
 			score +=
-				Math.round(8 * (1 - Math.abs(deletter.y - bar.y) / bar.height)) / 4;
+				Math.round(8 * (1 - Math.abs(delSprite.y - bar.y) / bar.height)) / 4;
 			scoreText.text = "Score: " + score;
-			deletter.destroy();
+			delSprite.destroy();
 			game.sound.play("tw" + Math.ceil(Math.random() * 5));
+			printText[printText.length - 1] += honkLetters[deletter.letter];
+			if (
+				printText[printText.length - 1].endsWith("honk") ||
+				printText[printText.length - 1].length > 16
+			)
+				printText.push("");
 		}
 		if (letters.length && letters[0].sprite.top > bar.bottom)
 			missed.push(letters.shift());

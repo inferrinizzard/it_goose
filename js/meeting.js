@@ -26,7 +26,8 @@ class Meeting extends Phaser.State {
 	chatter; // bg noise
 	chirp; // real honk sound
 	startOver; // restart button
-	emitter;
+	emitter; // particle emitter
+	stressBar; // stress bar
 	gooseAnim = ["Shame", "Angery", "Panic", "Angery", "Greed", "Shine"]; // emotes
 	init = () => {
 		this.hkI = 0;
@@ -56,7 +57,9 @@ class Meeting extends Phaser.State {
 		this.goose.anchor.setTo(0.5, 0);
 
 		this.table = game.add.sprite(0, 0, "meetingTable");
-		this.pos.forEach(p => game.add.sprite(p, 650, "vc"));
+		this.pos.forEach(p =>
+			game.add.sprite(p, 650, "VC" + (Math.round(Math.random()) + 1))
+		);
 		game.physics.startSystem(Phaser.Physics.ARCADE);
 
 		let honkIntro = game.add.text(400, 30, "Try a honk~", {
@@ -66,9 +69,17 @@ class Meeting extends Phaser.State {
 		honkIntro.anchor.setTo(0.5, 0.5);
 		setTimeout(() => {
 			honkIntro.destroy();
-			let stressBar = game.add.sprite(200, 5, "stressBar");
-			stressBar.scale.y = 0.5;
-			stressBar.tint = 0x777700;
+			let black = game.add.sprite(400, 24, "stressBar");
+			black.anchor.setTo(0.5, 0.5);
+			black.tint = "#000";
+			black.scale.setTo(1.025, 0.65);
+			let white = game.add.sprite(400, 24, "stressBar");
+			white.anchor.setTo(0.5, 0.5);
+			white.scale.y = 0.5;
+			this.stressBar = game.add.sprite(200, 24, "stressBar");
+			this.stressBar.anchor.setTo(0, 0.5);
+			this.stressBar.scale.y = 0.5;
+			this.stressBar.tint = 0xff3300;
 		}, 5000);
 
 		this.spawner = setTimeout(() => {
@@ -169,6 +180,7 @@ class Meeting extends Phaser.State {
 				this.swapGoose("gEXangery215");
 				this.lives--;
 				setTimeout(() => this.lives--, 15000);
+				this.stressBar.destroy();
 				return;
 			} else if (this.lives === -1) {
 				this.swapGoose("gEXangery215");
@@ -233,6 +245,7 @@ class Meeting extends Phaser.State {
 					if (this.lives === 1) this.goose.scale.setTo(1.2, 1.2);
 					this.chirp.play("", 0, 0.3);
 					this.emitter.start(true, 2000, null, 20);
+					this.stressBar.scale.x = this.lives / 5;
 					return;
 				}
 			}

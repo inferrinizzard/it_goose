@@ -112,7 +112,8 @@ class MainMenu extends Phaser.State {
 		[
 			"bgMeeting",
 			"meetingTable",
-			"vc",
+			"VC1",
+			"VC2",
 			"bubble",
 			"feather",
 			"paper",

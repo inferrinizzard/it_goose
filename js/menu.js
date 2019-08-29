@@ -159,25 +159,15 @@ class MainMenu extends Phaser.State {
 		// follow cursor
 		this.feather.position.setTo(game.input.x, game.input.y);
 
-		switch (this.keyFrame) {
-			case 4:
-				this.controlText.addColor("#ff0000", 15);
-				break;
-			case 3:
-				this.controlText.addColor("#ff0000", 17);
-				break;
-			case 1:
-				this.controlText.addColor("#ff0000", 19);
-				break;
-			case 0:
-				this.controlText.addColor("#ff0000", 21);
-				break;
-			default:
-				[15, 17, 19, 21].forEach(num =>
-					this.controlText.addColor("#000000", num)
-				);
-				break;
-		}
+		if ([4, 3, 1, 0].includes(this.keyFrame))
+			this.controlText.addColor(
+				"#ff0000",
+				[4, 3, 1, 0].indexOf(this.keyFrame) * 2 + 15
+			);
+		else
+			[15, 17, 19, 21].forEach(num =>
+				this.controlText.addColor("#000000", num)
+			);
 	};
 
 	loadGame = () => {
@@ -215,6 +205,7 @@ class MainMenu extends Phaser.State {
 		new Array(5)
 			.fill("tw")
 			.forEach((tw, k) => game.load.audio(tw + (k + 1), tw + (k + 1) + ".mp3"));
+		game.load.audio("swanlake", "swanlake.mp3");
 		game.load.path = "./assets/";
 
 		game.load.start();

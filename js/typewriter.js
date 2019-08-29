@@ -16,6 +16,7 @@ class TypeWriter extends Phaser.State {
 	nums; // number of keys
 	end; // display final text
 	wings; // typing wings
+	honkChildren; // prompt letters;
 	// init local vars
 	init = () => {
 		this.honkLetters = ["H", "N", "K", "O"];
@@ -29,6 +30,7 @@ class TypeWriter extends Phaser.State {
 		this.printText = [""];
 		this.nums = 0;
 		this.wings = [];
+		this.honkChildren = [];
 	};
 	create = () => {
 		// fade in
@@ -69,8 +71,17 @@ class TypeWriter extends Phaser.State {
 		// scan bar to accept letters
 		this.bar = game.add.sprite(400, 450, "stressBar");
 		this.bar.anchor.setTo(0.5, 0.5);
-		this.bar.tint = 0xff3300;
 		this.bar.scale.setTo(1, 1);
+		this.bar.visible = false;
+		this.honkLetters.forEach((h, k) =>
+			this.honkChildren.push(
+				game.add.text(400 - 122 + k * 64, 400, h, {
+					...wordStyle,
+					fontSize: 72,
+					fill: "#bb0000",
+				})
+			)
+		);
 
 		this.wings = [
 			game.add.sprite(100, 600, "LeftWing"),
@@ -87,6 +98,9 @@ class TypeWriter extends Phaser.State {
 		game.onResume.add(() => {
 			if (this.nums < 100) callback();
 		});
+
+		let swanlake = game.add.audio("swanlake", 0.25);
+		swanlake.play();
 	};
 	update = () => {
 		// move letters down
@@ -124,6 +138,9 @@ class TypeWriter extends Phaser.State {
 			this.scoreText.text = "Score: " + this.score;
 			delSprite.destroy();
 			game.sound.play("tw" + Math.ceil(Math.random() * 5));
+			if (deletter.letter == Math.floor(Math.random() * 4))
+				honks[Math.floor(Math.random() * honks.length)].play();
+
 			game.add
 				.tween(this.wings[Math.floor(deletter.letter / 2)])
 				.to({ y: 650 }, 100, Phaser.Easing.Bounce.In, true);
@@ -133,6 +150,11 @@ class TypeWriter extends Phaser.State {
 			this.printText[this.printText.length - 1] += this.honkLetters[
 				deletter.letter
 			];
+			this.honkChildren[deletter.letter].fill = 0xfff;
+			setTimeout(
+				() => (this.honkChildren[deletter.letter].fill = 0xbb0000),
+				100
+			);
 			if (
 				this.printText[this.printText.length - 1].endsWith("honk") ||
 				this.printText[this.printText.length - 1].length > 16

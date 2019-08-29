@@ -33,7 +33,7 @@ class TypeWriter extends Phaser.State {
 	create = () => {
 		// fade in
 		game.camera.flash(0, 250);
-		game.add.sprite(0, 0, "typewriterBG");
+		game.add.sprite(0, 0, "bgTypewriter");
 		this.honkKeys = this.honkLetters.map(k =>
 			game.input.keyboard.addKey(k.charCodeAt(0))
 		);
@@ -85,7 +85,7 @@ class TypeWriter extends Phaser.State {
 
 		// game pause/resume
 		game.onResume.add(() => {
-			if (nums < 100) callback();
+			if (this.nums < 100) callback();
 		});
 	};
 	update = () => {

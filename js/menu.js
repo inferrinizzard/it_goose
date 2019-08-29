@@ -13,6 +13,8 @@ class MainMenu extends Phaser.State {
 	controls; // controls button
 	back; // back button
 	controlText; // controls text
+	keyAnim; // control anim
+	keyFrame; // frame of ^ anim
 	// load assets needed for this screen
 	preload = () => {
 		game.load.path = "./assets/";
@@ -20,6 +22,7 @@ class MainMenu extends Phaser.State {
 		["title", "titleScreenCleaned", "featherPointer"].forEach(img =>
 			game.load.image(img, img + ".png")
 		);
+		game.load.spritesheet("keyanim", "keyanim.png", 300, 300);
 	};
 	// add bg image and buttons
 	create = () => {
@@ -81,18 +84,31 @@ class MainMenu extends Phaser.State {
 		});
 		this.back.kill();
 
-		this.controlText = game.add.text(
-			300,
-			450,
-			"Use the keys\n'H' 'O' 'N' 'K'",
-			{
-				...wordStyle,
-				fontSize: 72,
-			}
-		);
+		this.controlText = game.add.text(300, 450, "Use the keys\n   H O N K", {
+			...wordStyle,
+			fontSize: 72,
+		});
 		this.controlText.rotation = (Math.PI / 180) * 23;
 		this.controlText.anchor.setTo(0.5, 0.5);
 		this.controlText.kill();
+
+		// control anim
+		this.keyAnim = game.add.sprite(240, 600, "keyanim");
+		let keyAnimObj = this.keyAnim.animations.add(
+			"control",
+			new Array(8).fill(0).map((n, k) => 7 - k),
+			2,
+			true
+		);
+		this.keyAnim.animations.play("control");
+		this.keyAnim.rotation = (Math.PI / 180) * 23;
+		this.keyAnim.anchor.setTo(0.5, 0.5);
+		this.keyAnim.kill();
+		keyAnimObj.enableUpdate = true;
+		keyAnimObj.onUpdate.add(
+			(anim, frame) => (this.keyFrame = frame.index),
+			this
+		);
 
 		this.feather = game.add.sprite(0, 0, "featherPointer");
 		this.feather.anchor.setTo(0.125, 0.875);
@@ -119,6 +135,7 @@ class MainMenu extends Phaser.State {
 						this.back.exists = true;
 						this.controls.kill();
 						this.controlText.exists = true;
+						this.keyAnim.exists = true;
 					}
 					// return to main
 					if (s == this.back) {
@@ -126,6 +143,7 @@ class MainMenu extends Phaser.State {
 						this.back.kill();
 						this.controls.exists = true;
 						this.controlText.kill();
+						this.keyAnim.kill();
 					}
 				}
 				// reset scale of pointer and button
@@ -140,21 +158,46 @@ class MainMenu extends Phaser.State {
 		});
 		// follow cursor
 		this.feather.position.setTo(game.input.x, game.input.y);
+
+		switch (this.keyFrame) {
+			case 4:
+				this.controlText.addColor("#ff0000", 15);
+				break;
+			case 3:
+				this.controlText.addColor("#ff0000", 17);
+				break;
+			case 1:
+				this.controlText.addColor("#ff0000", 19);
+				break;
+			case 0:
+				this.controlText.addColor("#ff0000", 21);
+				break;
+			default:
+				[15, 17, 19, 21].forEach(num =>
+					this.controlText.addColor("#000000", num)
+				);
+				break;
+		}
 	};
 
 	loadGame = () => {
+		// bg assets
+		["Meeting", "WaterCooler", "Typewriter"].forEach(img =>
+			game.load.image("bg" + img, "bg" + img + ".png")
+		);
 		// misc assets
 		game.load.path = "./assets/";
-		[
-			"bgMeeting",
-			"meetingTable",
-			"bubble",
-			"feather",
-			"stressBar",
-			"paper",
-		].forEach(img => game.load.image(img, img + ".png"));
+		["meetingTable", "bubble", "feather", "stressBar", "paper"].forEach(img =>
+			game.load.image(img, img + ".png")
+		);
+		// water cooler cutscene assets
+		new Array(3)
+			.fill("randall")
+			.forEach((ran, k) =>
+				game.load.image(ran + (k + 1), ran + (k + 1) + ".png")
+			);
 		// typewriter assets
-		["typewriterBG", "VC1", "VC2", "LeftWing", "RightWing"].forEach(img =>
+		["VC1", "VC2", "LeftWing", "RightWing"].forEach(img =>
 			game.load.image(img, img + ".png")
 		);
 

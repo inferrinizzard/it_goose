@@ -14,15 +14,18 @@ var bar;
 var printText = [""];
 var nums = 0;
 var end;
+var wings = [];
+var callback;
 
 class TypeWriter extends Phaser.State {
 	create = () => {
+		game.camera.flash(0, 250);
 		game.add.sprite(0, 0, "typewriterBG");
 		honkKeys = honkLetters.map(k =>
 			game.input.keyboard.addKey(k.charCodeAt(0))
 		);
 		spawnerT = setTimeout(() => {
-			const callback = () => {
+			callback = () => {
 				let letter = game.add.text(hlI * 64 + 400 - 96, 50, honkLetters[hlI], {
 					...wordStyle,
 					fontSize: 64,
@@ -32,7 +35,8 @@ class TypeWriter extends Phaser.State {
 				game.physics.arcade.enable(letter);
 				hlI = Math.floor(Math.random() * honkLetters.length);
 
-				if (nums++ < 100) spawnerT = setTimeout(callback, interval);
+				if (nums++ < 100 && !game.paused)
+					spawnerT = setTimeout(callback, interval);
 			};
 			spawnerT = setTimeout(callback, interval);
 		}, interval);
@@ -48,10 +52,17 @@ class TypeWriter extends Phaser.State {
 		bar.tint = 0xff3300;
 		bar.scale.setTo(1, 1);
 
+		wings = [
+			game.add.sprite(100, 600, "LeftWing"),
+			game.add.sprite(500, 600, "RightWing"),
+		];
+
 		honks = honks.map(h => game.add.audio("honk" + h, 1));
 		new Array(5).fill("tw").forEach((tw, k) => game.add.audio(tw + (k + 1)));
 		end = game.add.text(400, 30, "");
 		end.anchor.setTo(0.5, 0);
+
+		game.onResume.add(() => callback());
 	};
 	update = () => {
 		if (nums >= 100) {
@@ -80,6 +91,12 @@ class TypeWriter extends Phaser.State {
 			scoreText.text = "Score: " + score;
 			delSprite.destroy();
 			game.sound.play("tw" + Math.ceil(Math.random() * 5));
+			game.add
+				.tween(wings[Math.floor(deletter.letter / 2)])
+				.to({ y: 650 }, 100, Phaser.Easing.Bounce.In, true);
+			game.add
+				.tween(wings[Math.floor(deletter.letter / 2)])
+				.to({ y: 600 }, 100, Phaser.Easing.Bounce.Out, true, 100);
 			printText[printText.length - 1] += honkLetters[deletter.letter];
 			if (
 				printText[printText.length - 1].endsWith("honk") ||

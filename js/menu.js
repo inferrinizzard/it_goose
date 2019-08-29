@@ -23,25 +23,40 @@ class MainMenu extends Phaser.State {
 			game.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
 		}
 		game.load.onLoadStart.add(() => {
-			[this.feather, bg, title, this.playButt, this.controls].forEach(s =>
-				s.destroy()
-			);
-			game.add
-				.text(400, 100, "Loading...", {
+			[this.feather, bg, title, this.playButt, this.controls].forEach(s => {
+				game.add.tween(s).to({ alpha: 0 }, 500, Phaser.Easing.Linear.In, true);
+				setTimeout(() => s.destroy(), 500);
+			});
+			setTimeout(() => {
+				let loadText = game.add.text(400, 100, "Loading...", {
 					...wordStyle,
 					fontSize: 96,
 					fill: "white",
-				})
-				.anchor.setTo(0.5, 0);
-			let spinner = game.add.sprite(400, 400, "featherPointer");
-			spinner.anchor.setTo(0.5, 0.5);
-			setInterval(() => (spinner.rotation += 0.01), 1);
+				});
+				loadText.anchor.setTo(0.5, 0);
+				loadText.alpha = 0;
+				game.add
+					.tween(loadText)
+					.to({ alpha: 1 }, 500, Phaser.Easing.Linear.In, true);
+				let spinner = game.add.sprite(400, 400, "featherPointer");
+				spinner.anchor.setTo(0.5, 0.5);
+				spinner.alpha = 0;
+				game.add
+					.tween(spinner)
+					.to({ alpha: 1 }, 500, Phaser.Easing.Linear.In, true);
+				setInterval(() => (spinner.rotation += 0.01), 1);
+			}, 500);
 		}, this);
-		game.load.onLoadComplete.add(() => game.state.start("Meeting"), this);
-		// game.load.onLoadComplete.add(() => game.state.start("TypeWriter"), this);
+		// game.load.onLoadComplete.add(() => {
+		// 	game.camera.fade(0, 250);
+		// 	setTimeout(() => game.state.start("Meeting"), 250);
+		// }, this);
+		game.load.onLoadComplete.add(() => game.state.start("TypeWriter"), this);
 
 		let bg = game.add.sprite(0, 0, "titleScreenCleaned");
+		bg.alpha = 0.1;
 		let title = game.add.sprite(0, 25, "title");
+		title.alpha = 0;
 		this.playButt = game.add.text(300, 430, "Play", {
 			...wordStyle,
 			fontSize: 72,
@@ -74,6 +89,11 @@ class MainMenu extends Phaser.State {
 		this.feather = game.add.sprite(0, 0, "featherPointer");
 		this.feather.anchor.setTo(0.125, 0.875);
 		game.input.mouse.capture = true;
+
+		game.add.tween(bg).to({ alpha: 1 }, 500, Phaser.Easing.Linear.In, true);
+		game.add
+			.tween(title)
+			.to({ alpha: 1 }, 500, Phaser.Easing.Linear.In, true, 600);
 	};
 	update = () => {
 		[this.playButt, this.controls, this.back].forEach(s => {
@@ -112,14 +132,14 @@ class MainMenu extends Phaser.State {
 		[
 			"bgMeeting",
 			"meetingTable",
-			"VC1",
-			"VC2",
 			"bubble",
 			"feather",
-			"paper",
 			"stressBar",
-			"typewriterBG",
+			"paper",
 		].forEach(img => game.load.image(img, img + ".png"));
+		["typewriterBG", "VC1", "VC2", "LeftWing", "RightWing"].forEach(img =>
+			game.load.image(img, img + ".png")
+		);
 
 		game.load.path = "./assets/goose/";
 		["Boss", "Ded", "EXangery215", "Point225", "Honk215", "Stand"].forEach(

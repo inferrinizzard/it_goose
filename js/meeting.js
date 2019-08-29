@@ -28,6 +28,7 @@ class Meeting extends Phaser.State {
 	startOver; // restart button
 	emitter; // particle emitter
 	stressBar; // stress bar
+	callback; // bubble gen callback
 	gooseAnim = ["Shame", "Angery", "Panic", "Angery", "Greed", "Shine"]; // emotes
 	init = () => {
 		this.hkI = 0;
@@ -47,6 +48,7 @@ class Meeting extends Phaser.State {
 		this.sawJump = false;
 	};
 	create = () => {
+		game.camera.flash(0, 250);
 		game.add.sprite(0, 0, "bgMeeting");
 
 		this.goose = game.add.sprite(580, 240, "gooseEmotes");
@@ -83,7 +85,7 @@ class Meeting extends Phaser.State {
 		}, 5000);
 
 		this.spawner = setTimeout(() => {
-			const callback = () => {
+			this.callback = () => {
 				if (this.bubbles.length < 10) {
 					let bubble = game.add.sprite(
 						this.pos[Math.floor(Math.random() * this.pos.length)] + 75,
@@ -98,7 +100,7 @@ class Meeting extends Phaser.State {
 					this.speed += 0.2;
 					this.interval = Math.max(1000, this.interval - 100);
 				}
-				this.spawner = setTimeout(callback, this.interval);
+				if (!game.paused) this.spawner = setTimeout(callback, this.interval);
 			};
 			this.spawner = setTimeout(callback, this.interval);
 		}, this.interval);
@@ -125,6 +127,8 @@ class Meeting extends Phaser.State {
 		this.emitter.makeParticles(["feather", "paper"]);
 		this.emitter.width = 800;
 		this.emitter.gravity = 800;
+
+		game.onResume.add(() => this.callback());
 	};
 
 	update = () => {
@@ -188,7 +192,7 @@ class Meeting extends Phaser.State {
 				this.goose.scale.y += 0.01;
 			} else if (this.lives == -2) {
 				this.goose.destroy();
-				this.game.add.text(30, 450, "You've angered the goose.", {
+				this.game.add.text(30, 450, "The goose is angered.", {
 					...wordStyle,
 					fill: "#FFF",
 					fontSize: 72,

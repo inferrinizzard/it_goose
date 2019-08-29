@@ -1,5 +1,5 @@
-var angered = 0;
-var callback;
+var angered = 0; // global loss count
+var callback; // global callback temp storage
 class Meeting extends Phaser.State {
 	honkKeys; //[H, O, N, K] keys
 	honkButt; // space to honk
@@ -49,9 +49,11 @@ class Meeting extends Phaser.State {
 		this.sawJump = false;
 	};
 	create = () => {
+		// fade in
 		game.camera.flash(0, 250);
 		game.add.sprite(0, 0, "bgMeeting");
 
+		// load goose anims
 		this.goose = game.add.sprite(580, 240, "gooseEmotes");
 		["Angry", "Shame", "Greed", "Shine", "Panic"].forEach((e, k) =>
 			this.goose.animations.add(e, [2 * k, 2 * k + 1], 8, true)
@@ -70,6 +72,7 @@ class Meeting extends Phaser.State {
 			fontSize: 64,
 		});
 		honkIntro.anchor.setTo(0.5, 0.5);
+		// create stress bar
 		setTimeout(() => {
 			honkIntro.destroy();
 			let black = game.add.sprite(400, 24, "stressBar");
@@ -85,6 +88,7 @@ class Meeting extends Phaser.State {
 			this.stressBar.tint = 0xff3300;
 		}, 5000);
 
+		// generate bubble spawner with recursive timeout
 		this.spawner = setTimeout(() => {
 			callback = () => {
 				if (this.bubbles.length < 10) {
@@ -109,12 +113,16 @@ class Meeting extends Phaser.State {
 			this.spawner = setTimeout(callback, this.interval);
 		}, this.interval);
 
+		// honk at will
 		this.honkButt = game.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR);
+		// accept honk key input
 		this.honkKeys = ["H", "O", "N", "K"].map(k =>
 			game.input.keyboard.addKey(k.charCodeAt(0))
 		);
+		// honk audio
 		honks = honks.map(h => game.add.audio("honk" + h, 1));
 
+		// timer text
 		this.timer = game.add.text(
 			30,
 			50,
@@ -123,29 +131,35 @@ class Meeting extends Phaser.State {
 		);
 		this.livesText = game.add.text(680, 50, "Lives: " + this.lives, wordStyle);
 
+		// misc audio
 		this.chatter = game.add.audio("meeting");
 		this.chirp = game.add.audio("chirp");
 		this.chatter.play("", 0, 0.3, true);
 
+		// particle emitter
 		this.emitter = game.add.emitter(400, 500);
 		this.emitter.makeParticles(["feather", "paper"]);
 		this.emitter.width = 200;
 		this.emitter.gravity = 800;
 
+		// ghame pause/resume
 		game.onResume.add(() => {
 			if (this.lives > 0) callback();
 		});
 	};
 
 	update = () => {
+		// jump anim on honk
 		this.goose.y = this.sawJump
 			? this.goose.y - 2
 			: Math.min(240, this.goose.y + 2);
+		// left/right motion
 		if (this.time > 0) {
 			if (this.sawMove)
 				this.goose.x =
 					Math.sin((this.sawTick += game.time.physicsElapsed)) * 250 + 400;
 
+			// flip on amplitude
 			if (250 - Math.abs(400 - this.goose.x) < 0.01) {
 				this.goose.scale.x *=
 					Math.sign(this.goose.scale.x) === Math.sign(this.goose.x - 400)
@@ -170,10 +184,14 @@ class Meeting extends Phaser.State {
 			}
 		}
 
+		// decrement timer
 		if (this.lives > 0 && (this.time -= game.time.elapsedMS / 1000) > 0)
 			this.timer.text =
 				"Meeting ends\nin: " + Math.floor(this.time) + " minutes";
+
+		// check loss
 		if (this.lives <= 0) {
+			// clear screen
 			if (this.lives === 0) {
 				honks[Math.floor(Math.random() * honks.length)].play();
 				this.bubbles.forEach(b => b.destroy());
@@ -192,11 +210,13 @@ class Meeting extends Phaser.State {
 				setTimeout(() => this.lives--, 15000);
 				this.stressBar.destroy();
 				return;
+				// start death anim
 			} else if (this.lives === -1) {
 				this.swapGoose("gEXangery215");
 				this.goose.scale.x += 0.01;
 				this.goose.scale.y += 0.01;
-			} else if (this.lives == -2) {
+				// final end screen
+			} else if (this.lives === -2) {
 				this.goose.destroy();
 				this.game.add
 					.text(400, 450, "The goose is angered.", {
@@ -229,6 +249,7 @@ class Meeting extends Phaser.State {
 				game.input.mouse.capture = true;
 				this.lives--;
 				return;
+				// await next state input
 			} else {
 				if (this.startOver.input.pointerOver()) {
 					this.startOver.scale.setTo(1.1);
@@ -247,7 +268,9 @@ class Meeting extends Phaser.State {
 						if (s) s.scale.setTo(1);
 					});
 			}
+			// check success
 		} else if (this.time <= 0) {
+			// clear board
 			if (Math.round(this.time) === 0) {
 				honks[Math.floor(Math.random() * honks.length)].play();
 				this.bubbles.forEach(b => b.destroy());
@@ -265,6 +288,7 @@ class Meeting extends Phaser.State {
 				this.goose.scale.setTo(2, 2);
 				this.time = -1;
 				return;
+				// final end screen
 			} else if (this.time === -1) {
 				this.game.add
 					.text(400, 450, "The goose is satisfied.", {
@@ -283,6 +307,7 @@ class Meeting extends Phaser.State {
 			}
 			game.input.mouse.capture = true;
 		}
+		// manage bubbles and decrement lives on reaching top
 		this.bubbles.forEach((b, k) => {
 			if (b && b.body) {
 				b.body.y -= this.speed;
@@ -299,8 +324,9 @@ class Meeting extends Phaser.State {
 				}
 			}
 		});
+		// accept honk key input
 		if (this.honkKeys[this.hkI].justDown) {
-			if (this.hkI == 0)
+			if (this.hkI === 0)
 				this.honkAnchor = Math.random() * (game.world.width - 32 * 4);
 			this.letters.push(
 				game.add.text(
@@ -314,11 +340,12 @@ class Meeting extends Phaser.State {
 				)
 			);
 			this.chirp.play("", 0, 0.02);
-			if (this.hkI == this.honkKeys.length - 1) {
+			// release word on k input
+			if (this.hkI === this.honkKeys.length - 1) {
 				this.letters.forEach(l => {
 					game.physics.arcade.enable(l, false);
 					if (
-						this.bubbles.length == 0 ||
+						this.bubbles.length === 0 ||
 						this.words.length >= this.bubbles.length
 					)
 						l.body.gravity.y = 300;
@@ -338,6 +365,7 @@ class Meeting extends Phaser.State {
 		}
 		if (this.honkButt.justDown) this.honk();
 
+		// seek bubble and navigate word
 		for (let k = 0; k < this.words.length; k++) {
 			if (k < 0 || this.words.length === 0) break;
 			let destroy = false;
@@ -350,6 +378,7 @@ class Meeting extends Phaser.State {
 						this.bubbles[k],
 						400 * (1 + (5 - this.lives) / 5)
 					);
+					// destroy on contact
 					if (
 						Phaser.Rectangle.contains(
 							l.body,
@@ -365,12 +394,14 @@ class Meeting extends Phaser.State {
 					if (l.body.y > game.world.height) destroy = true;
 				}
 			});
+			// handle array indexing
 			if (destroy) {
 				this.words[k].forEach(l => l.destroy());
 				this.words[k] = null;
 				this.words.splice(k--, 1);
 			}
 		}
+		// change colour for visibility
 		this.other.forEach(o =>
 			o.forEach(l => {
 				if (
@@ -384,6 +415,7 @@ class Meeting extends Phaser.State {
 		);
 	};
 
+	// play honk sound and handle honk anims
 	honk = () => {
 		if (!this.sawJump) {
 			this.swapGoose("gHonk215");

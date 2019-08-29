@@ -1,21 +1,22 @@
 class TypeWriter extends Phaser.State {
-	spawnerT;
-	honkLetters;
-	honkKeys;
-	letters;
-	hlI;
+	spawnerT; // typewriter spawner
+	honkLetters; // H N K O
+	honkKeys; // keyboard inputs
+	letters; // falling letters
+	hlI; // index of keyboard press
 	// speed;
-	interval;
+	interval; // spawn interval
 	// iMult;
-	fallSpeed;
-	score;
-	scoreText;
-	missed;
-	bar;
-	printText;
-	nums;
-	end;
-	wings;
+	fallSpeed; // fall speed
+	score; // score num
+	scoreText; // display score
+	missed; // falling past the type section
+	bar; // type bar
+	printText; // honks to be printed at end
+	nums; // number of keys
+	end; // display final text
+	wings; // typing wings
+	// init local vars
 	init = () => {
 		this.honkLetters = ["H", "N", "K", "O"];
 		this.letters = [];
@@ -30,11 +31,13 @@ class TypeWriter extends Phaser.State {
 		this.wings = [];
 	};
 	create = () => {
+		// fade in
 		game.camera.flash(0, 250);
 		game.add.sprite(0, 0, "typewriterBG");
 		this.honkKeys = this.honkLetters.map(k =>
 			game.input.keyboard.addKey(k.charCodeAt(0))
 		);
+		// generate letter spawner with recursive timeout
 		this.spawnerT = setTimeout(() => {
 			callback = () => {
 				let letter = game.add.text(
@@ -57,11 +60,13 @@ class TypeWriter extends Phaser.State {
 			this.spawnerT = setTimeout(callback, this.interval);
 		}, this.interval);
 
+		// score text
 		this.scoreText = game.add.text(50, 50, "Score: " + this.score, {
 			...wordStyle,
 			fontSize: 32,
 		});
 
+		// scan bar to accept letters
 		this.bar = game.add.sprite(400, 450, "stressBar");
 		this.bar.anchor.setTo(0.5, 0.5);
 		this.bar.tint = 0xff3300;
@@ -72,19 +77,23 @@ class TypeWriter extends Phaser.State {
 			game.add.sprite(500, 600, "RightWing"),
 		];
 
+		// honk audio
 		honks = honks.map(h => game.add.audio("honk" + h, 1));
 		new Array(5).fill("tw").forEach((tw, k) => game.add.audio(tw + (k + 1)));
 		this.end = game.add.text(400, 30, "", { ...wordStyle, fontSize: 32 });
 		this.end.anchor.setTo(0.5, 0);
 
+		// game pause/resume
 		game.onResume.add(() => {
 			if (nums < 100) callback();
 		});
 	};
 	update = () => {
+		// move letters down
 		[this.letters, this.missed].forEach(n =>
 			n.forEach(l => (l.sprite.body.y += this.fallSpeed))
 		);
+		// check finish
 		if (this.nums >= 100 && this.letters.length === 0) {
 			this.bar.destroy();
 			this.letters.forEach(l => l.sprite.destroy());
@@ -96,6 +105,7 @@ class TypeWriter extends Phaser.State {
 			this.scoreText.destroy();
 			return;
 		}
+		// if intersecting scan bar
 		if (
 			this.letters.length > 0 &&
 			this.honkKeys[this.letters[0].letter].justDown &&
@@ -104,6 +114,7 @@ class TypeWriter extends Phaser.State {
 				this.bar.getBounds()
 			)
 		) {
+			// delete and play accompanying sounds and anims
 			let deletter = this.letters.shift();
 			let delSprite = deletter.sprite;
 			this.score +=
@@ -128,8 +139,10 @@ class TypeWriter extends Phaser.State {
 			)
 				this.printText.push("");
 		}
+		// if missed scan bar, make it untypeable
 		if (this.letters.length && this.letters[0].sprite.top > this.bar.bottom)
 			this.missed.push(this.letters.shift());
+		// destroy when hit bottom
 		if (this.missed.length && this.missed[0].sprite.top > game.world.height) {
 			this.missed.shift().sprite.destroy();
 			this.scoreText.text = "Score: " + --this.score;

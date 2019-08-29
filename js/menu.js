@@ -1,15 +1,19 @@
+// start Phaser instance
 var game = new Phaser.Game(800, 800, Phaser.AUTO, "content", true);
 
+// global honks
 var honks = ["English", "French", "Hindi", "Russian", "Japan"];
+// global text styling
 var wordStyle = { font: "Charter", fontSize: 24, fill: "#000" };
 
-// console.log(window.innerHeight);
+// starting state
 class MainMenu extends Phaser.State {
-	feather;
-	playButt;
-	controls;
-	back;
-	controlText;
+	feather; // cursor pointer
+	playButt; // play button
+	controls; // controls button
+	back; // back button
+	controlText; // controls text
+	// load assets needed for this screen
 	preload = () => {
 		game.load.path = "./assets/";
 
@@ -17,11 +21,14 @@ class MainMenu extends Phaser.State {
 			game.load.image(img, img + ".png")
 		);
 	};
+	// add bg image and buttons
 	create = () => {
+		// scale as necessary
 		if (window.innerHeight < 800) {
 			game.scale.setUserScale(0.75);
 			game.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
 		}
+		// loading screen in
 		game.load.onLoadStart.add(() => {
 			[this.feather, bg, title, this.playButt, this.controls].forEach(s => {
 				game.add.tween(s).to({ alpha: 0 }, 500, Phaser.Easing.Linear.In, true);
@@ -47,6 +54,7 @@ class MainMenu extends Phaser.State {
 				setInterval(() => (spinner.rotation += 0.01), 1);
 			}, 500);
 		}, this);
+		// start next state when done loading
 		// game.load.onLoadComplete.add(() => {
 		// 	game.camera.fade(0, 250);
 		// 	setTimeout(() => game.state.start("Meeting"), 250);
@@ -90,24 +98,29 @@ class MainMenu extends Phaser.State {
 		this.feather.anchor.setTo(0.125, 0.875);
 		game.input.mouse.capture = true;
 
+		// fade in
 		game.add.tween(bg).to({ alpha: 1 }, 500, Phaser.Easing.Linear.In, true);
 		game.add
 			.tween(title)
 			.to({ alpha: 1 }, 500, Phaser.Easing.Linear.In, true, 600);
 	};
 	update = () => {
+		// check for player click input
 		[this.playButt, this.controls, this.back].forEach(s => {
 			if (s.input.pointerOver()) {
 				s.scale.setTo(1.1);
 				this.feather.rotation = (Math.PI / 180) * 23;
 				if (game.input.activePointer.leftButton.justPressed()) {
+					// start load
 					if (s == this.playButt) this.loadGame();
+					// turn on controls
 					if (s == this.controls) {
 						this.playButt.kill();
 						this.back.exists = true;
 						this.controls.kill();
 						this.controlText.exists = true;
 					}
+					// return to main
 					if (s == this.back) {
 						this.playButt.exists = true;
 						this.back.kill();
@@ -115,6 +128,7 @@ class MainMenu extends Phaser.State {
 						this.controlText.kill();
 					}
 				}
+				// reset scale of pointer and button
 			} else if (
 				[this.playButt, this.controls, this.back].every(
 					c => !c.input.pointerOver()
@@ -124,10 +138,12 @@ class MainMenu extends Phaser.State {
 				this.feather.rotation = 0;
 			}
 		});
+		// follow cursor
 		this.feather.position.setTo(game.input.x, game.input.y);
 	};
 
 	loadGame = () => {
+		// misc assets
 		game.load.path = "./assets/";
 		[
 			"bgMeeting",
@@ -137,17 +153,20 @@ class MainMenu extends Phaser.State {
 			"stressBar",
 			"paper",
 		].forEach(img => game.load.image(img, img + ".png"));
+		// typewriter assets
 		["typewriterBG", "VC1", "VC2", "LeftWing", "RightWing"].forEach(img =>
 			game.load.image(img, img + ".png")
 		);
 
 		game.load.path = "./assets/goose/";
+		// goose assets
 		["Boss", "Ded", "EXangery215", "Point225", "Honk215", "Stand"].forEach(
 			img => game.load.image("g" + img, "g" + img + ".png")
 		);
 		game.load.spritesheet("gooseEmotes", "gooseEmotes.png", 200, 200, 10);
 
 		game.load.path = "./assets/audio/";
+		// game audio
 		honks.forEach(h => game.load.audio("honk" + h, "honk" + h + ".mp3"));
 		["meeting", "chirp"].forEach(a => game.load.audio(a, a + ".mp3"));
 		new Array(5)
@@ -158,11 +177,3 @@ class MainMenu extends Phaser.State {
 		game.load.start();
 	};
 }
-
-// lives = 5;
-// start = 0;
-// interval = 3000;
-// speed = 0.5;
-
-//todo: typewriter,  particles, restart mechanics
-//shakey angery, rotate bubbles?

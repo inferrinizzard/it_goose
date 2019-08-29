@@ -27,6 +27,7 @@ class Meeting extends Phaser.State {
 	chatter; // bg noise
 	chirp; // real honk sound
 	startOver; // restart button
+	continue; // continue button
 	emitter; // particle emitter
 	stressBar; // stress bar
 	gooseAnim = ["Shame", "Angery", "Panic", "Angery", "Greed", "Shine"]; // emotes
@@ -126,12 +127,14 @@ class Meeting extends Phaser.State {
 		this.chirp = game.add.audio("chirp");
 		this.chatter.play("", 0, 0.3, true);
 
-		this.emitter = game.add.emitter(400, 0);
+		this.emitter = game.add.emitter(400, 500);
 		this.emitter.makeParticles(["feather", "paper"]);
-		this.emitter.width = 800;
+		this.emitter.width = 200;
 		this.emitter.gravity = 800;
 
-		game.onResume.add(() => callback());
+		game.onResume.add(() => {
+			if (this.lives > 0) callback();
+		});
 	};
 
 	update = () => {
@@ -195,15 +198,17 @@ class Meeting extends Phaser.State {
 				this.goose.scale.y += 0.01;
 			} else if (this.lives == -2) {
 				this.goose.destroy();
-				this.game.add.text(30, 450, "The goose is angered.", {
-					...wordStyle,
-					fill: "#FFF",
-					fontSize: 72,
-				});
+				this.game.add
+					.text(400, 450, "The goose is angered.", {
+						...wordStyle,
+						fill: "#FFF",
+						fontSize: 72,
+					})
+					.anchor.setTo(0.5, 0);
 				this.startOver = this.game.add.text(
-					400,
+					angered <= 1 ? 400 : 200,
 					600,
-					angered <= 0 ? "Start over?" : "Continue?",
+					"Start over?",
 					{
 						...wordStyle,
 						fill: "#FFF",
@@ -212,6 +217,15 @@ class Meeting extends Phaser.State {
 				);
 				this.startOver.inputEnabled = true;
 				this.startOver.anchor.setTo(0.5, 0.5);
+				if (angered++ > 1) {
+					this.continue = this.game.add.text(600, 600, "Continue?", {
+						...wordStyle,
+						fill: "#FFF",
+						fontSize: 72,
+					});
+					this.continue.inputEnabled = true;
+					this.continue.anchor.setTo(0.5, 0.5);
+				}
 				game.input.mouse.capture = true;
 				this.lives--;
 				return;
@@ -219,11 +233,19 @@ class Meeting extends Phaser.State {
 				if (this.startOver.input.pointerOver()) {
 					this.startOver.scale.setTo(1.1);
 					if (game.input.activePointer.leftButton.justPressed()) {
-						if (angered++ <= 0) game.state.restart(true);
-						else game.state.start("TypeWriter", true);
+						game.state.restart(true);
 						return;
 					}
-				} else this.startOver.scale.setTo(1);
+				} else if (this.continue && this.continue.input.pointerOver()) {
+					this.continue.scale.setTo(1.1);
+					if (game.input.activePointer.leftButton.justPressed()) {
+						game.state.start("TypeWriter", true);
+						return;
+					}
+				} else
+					[this.startOver, this.continue].forEach(s => {
+						if (s) s.scale.setTo(1);
+					});
 			}
 		} else if (this.time <= 0) {
 			if (Math.round(this.time) === 0) {
@@ -244,7 +266,22 @@ class Meeting extends Phaser.State {
 				this.time = -1;
 				return;
 			} else if (this.time === -1) {
+				this.game.add
+					.text(400, 450, "The goose is satisfied.", {
+						...wordStyle,
+						fill: "#FFF",
+						fontSize: 72,
+					})
+					.anchor.setTo(0.5, 0);
+				this.continue = this.game.add.text(600, 600, "Continue?", {
+					...wordStyle,
+					fill: "#FFF",
+					fontSize: 72,
+				});
+				this.continue.inputEnabled = true;
+				this.continue.anchor.setTo(0.5, 0.5);
 			}
+			game.input.mouse.capture = true;
 		}
 		this.bubbles.forEach((b, k) => {
 			if (b && b.body) {

@@ -47,11 +47,11 @@ class MainMenu extends Phaser.State {
 				setInterval(() => (spinner.rotation += 0.01), 1);
 			}, 500);
 		}, this);
-		game.load.onLoadComplete.add(() => {
-			game.camera.fade(0, 250);
-			setTimeout(() => game.state.start("Meeting"), 250);
-		}, this);
-		// game.load.onLoadComplete.add(() => game.state.start("TypeWriter"), this);
+		// game.load.onLoadComplete.add(() => {
+		// 	game.camera.fade(0, 250);
+		// 	setTimeout(() => game.state.start("Meeting"), 250);
+		// }, this);
+		game.load.onLoadComplete.add(() => game.state.start("TypeWriter"), this);
 
 		let bg = game.add.sprite(0, 0, "titleScreenCleaned");
 		bg.alpha = 0.1;

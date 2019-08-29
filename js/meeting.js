@@ -30,6 +30,7 @@ class Meeting extends Phaser.State {
 	continue; // continue button
 	emitter; // particle emitter
 	stressBar; // stress bar
+	randoText; // random speech bubble text
 	gooseAnim = ["Shame", "Angery", "Panic", "Angery", "Greed", "Shine"]; // emotes
 	init = () => {
 		this.hkI = 0;
@@ -47,6 +48,20 @@ class Meeting extends Phaser.State {
 		this.sawMove = true;
 		this.sawTick = 0;
 		this.sawJump = false;
+		this.randoText = [
+			"。。。",
+			"nani!?",
+			"goose?",
+			"？？？",
+			"＄＄＄",
+			"(」゜ロ゜)」",
+			"(╬⁽⁽ ⁰ ⁾⁾ Д ⁽⁽ ⁰ ⁾⁾)",
+			"honk",
+			"le 'onk",
+			"el hoñk",
+			"ホンク",
+			"hank",
+		];
 	};
 	create = () => {
 		// fade in
@@ -101,7 +116,12 @@ class Meeting extends Phaser.State {
 					game.physics.enable(bubble, Phaser.Physics.ARCADE);
 					this.bubbles.push(bubble);
 					bubble.anchor.setTo(0.5, 0.5);
-					let bubbleText = game.add.text(0, -10, "a", wordStyle);
+					let bubbleText = game.add.text(
+						0,
+						-10,
+						this.randoText[Math.floor(Math.random() * this.randoText.length)],
+						wordStyle
+					);
 					bubbleText.anchor.setTo(0.5, 0.5);
 					bubble.addChild(bubbleText);
 
@@ -260,7 +280,8 @@ class Meeting extends Phaser.State {
 				} else if (this.continue && this.continue.input.pointerOver()) {
 					this.continue.scale.setTo(1.1);
 					if (game.input.activePointer.leftButton.justPressed()) {
-						game.state.start("TypeWriter", true);
+						game.camera.fade(0, 250);
+						setTimeout(() => game.state.start("TypeWriter", true), 250);
 						return;
 					}
 				} else

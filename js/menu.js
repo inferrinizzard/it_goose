@@ -58,11 +58,10 @@ class MainMenu extends Phaser.State {
 			}, 500);
 		}, this);
 		// start next state when done loading
-		// game.load.onLoadComplete.add(() => {
-		// 	game.camera.fade(0, 250);
-		// 	setTimeout(() => game.state.start("Meeting"), 250);
-		// }, this);
-		game.load.onLoadComplete.add(() => game.state.start("TypeWriter"), this);
+		game.load.onLoadComplete.add(() => {
+			game.camera.fade(0, 250);
+			setTimeout(() => game.state.start("Meeting"), 250);
+		}, this);
 
 		let bg = game.add.sprite(0, 0, "titleScreenCleaned");
 		bg.alpha = 0.1;
@@ -119,6 +118,15 @@ class MainMenu extends Phaser.State {
 		game.add
 			.tween(title)
 			.to({ alpha: 1 }, 500, Phaser.Easing.Linear.In, true, 600);
+
+		// credits
+		let credits = game.add.text(
+			800,
+			800,
+			"made by:\nMarcus Gray\nKeren Franco \nSean Song",
+			{ ...wordStyle, fill: "#fff", fontSize: 16 }
+		);
+		credits.anchor.setTo(1, 1);
 	};
 	update = () => {
 		// check for player click input

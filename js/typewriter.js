@@ -15,7 +15,6 @@ var printText = [""];
 var nums = 0;
 var end;
 var wings = [];
-var callback;
 
 class TypeWriter extends Phaser.State {
 	create = () => {

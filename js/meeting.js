@@ -1,4 +1,5 @@
 var angered = 0;
+var callback;
 class Meeting extends Phaser.State {
 	honkKeys; //[H, O, N, K] keys
 	honkButt; // space to honk
@@ -28,7 +29,6 @@ class Meeting extends Phaser.State {
 	startOver; // restart button
 	emitter; // particle emitter
 	stressBar; // stress bar
-	callback; // bubble gen callback
 	gooseAnim = ["Shame", "Angery", "Panic", "Angery", "Greed", "Shine"]; // emotes
 	init = () => {
 		this.hkI = 0;
@@ -85,7 +85,7 @@ class Meeting extends Phaser.State {
 		}, 5000);
 
 		this.spawner = setTimeout(() => {
-			this.callback = () => {
+			callback = () => {
 				if (this.bubbles.length < 10) {
 					let bubble = game.add.sprite(
 						this.pos[Math.floor(Math.random() * this.pos.length)] + 75,
@@ -96,6 +96,9 @@ class Meeting extends Phaser.State {
 					game.physics.enable(bubble, Phaser.Physics.ARCADE);
 					this.bubbles.push(bubble);
 					bubble.anchor.setTo(0.5, 0.5);
+					let bubbleText = game.add.text(0, -10, "a", wordStyle);
+					bubbleText.anchor.setTo(0.5, 0.5);
+					bubble.addChild(bubbleText);
 
 					this.speed += 0.2;
 					this.interval = Math.max(1000, this.interval - 100);
@@ -128,7 +131,7 @@ class Meeting extends Phaser.State {
 		this.emitter.width = 800;
 		this.emitter.gravity = 800;
 
-		game.onResume.add(() => this.callback());
+		game.onResume.add(() => callback());
 	};
 
 	update = () => {

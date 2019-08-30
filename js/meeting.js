@@ -325,11 +325,12 @@ class Meeting extends Phaser.State {
 				this.continue.anchor.setTo(0.5, 0.5);
 				return;
 				// final end screen
-			} else if (this.time < -1) {
+			} else if (this.time < -1 && this.time > -10) {
 				if (this.continue && this.continue.input.pointerOver()) {
 					this.continue.scale.setTo(1.1);
 					if (game.input.activePointer.leftButton.justPressed()) {
 						game.camera.fade(0, 250);
+						this.time = -10;
 						setTimeout(() => game.state.start("TypeWriter", true), 250);
 						return;
 					}

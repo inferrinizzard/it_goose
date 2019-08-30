@@ -65,8 +65,7 @@ class MainMenu extends Phaser.State {
 
 		game.load.onLoadComplete.add(() => {
 			game.camera.fade(0, 250);
-			// setTimeout(() => game.state.start("Meeting"), 500);
-			setTimeout(() => game.state.start("TypeWriter"), 500);
+			setTimeout(() => game.state.start("Meeting"), 500);
 		}, this);
 
 		let bg = game.add.sprite(0, 0, "titleScreenCleaned");

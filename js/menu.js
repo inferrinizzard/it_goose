@@ -15,6 +15,7 @@ class MainMenu extends Phaser.State {
 	controlText; // controls text
 	keyAnim; // control anim
 	keyFrame; // frame of ^ anim
+	loadstuff;
 	// load assets needed for this screen
 	preload = () => {
 		game.load.path = "./assets/";
@@ -45,12 +46,14 @@ class MainMenu extends Phaser.State {
 				});
 				loadText.anchor.setTo(0.5, 0);
 				loadText.alpha = 0;
+				this.loadstuff = [loadText];
 				game.add
 					.tween(loadText)
 					.to({ alpha: 1 }, 500, Phaser.Easing.Linear.In, true);
 				let spinner = game.add.sprite(400, 400, "featherPointer");
 				spinner.anchor.setTo(0.5, 0.5);
 				spinner.alpha = 0;
+				this.loadstuff.push(spinner);
 				game.add
 					.tween(spinner)
 					.to({ alpha: 1 }, 500, Phaser.Easing.Linear.In, true);
@@ -58,9 +61,10 @@ class MainMenu extends Phaser.State {
 			}, 500);
 		}, this);
 		// start next state when done loading
+
 		game.load.onLoadComplete.add(() => {
 			game.camera.fade(0, 250);
-			setTimeout(() => game.state.start("Meeting"), 250);
+			setTimeout(() => game.state.start("Meeting"), 500);
 		}, this);
 
 		let bg = game.add.sprite(0, 0, "titleScreenCleaned");

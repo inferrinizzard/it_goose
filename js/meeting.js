@@ -125,7 +125,7 @@ class Meeting extends Phaser.State {
 					bubbleText.anchor.setTo(0.5, 0.5);
 					bubble.addChild(bubbleText);
 
-					this.speed += 0.2;
+					this.speed += 0.1;
 					this.interval = Math.max(1000, this.interval - 100);
 				}
 				if (!game.paused) this.spawner = setTimeout(callback, this.interval);
@@ -246,7 +246,7 @@ class Meeting extends Phaser.State {
 					})
 					.anchor.setTo(0.5, 0);
 				this.startOver = this.game.add.text(
-					angered <= 1 ? 400 : 200,
+					angered <= 0 ? 400 : 200,
 					600,
 					"Start over?",
 					{
@@ -257,7 +257,7 @@ class Meeting extends Phaser.State {
 				);
 				this.startOver.inputEnabled = true;
 				this.startOver.anchor.setTo(0.5, 0.5);
-				if (angered++ > 1) {
+				if (angered++ > 0) {
 					this.continue = this.game.add.text(600, 600, "Continue?", {
 						...wordStyle,
 						fill: "#FFF",
@@ -307,10 +307,7 @@ class Meeting extends Phaser.State {
 				this.table.destroy();
 				this.swapGoose(this.lives > 2 ? "Greed" : "Shine");
 				this.goose.scale.setTo(2, 2);
-				this.time = -1;
-				return;
-				// final end screen
-			} else if (this.time === -1) {
+				this.time = -2;
 				this.game.add
 					.text(400, 450, "The goose is satisfied.", {
 						...wordStyle,
@@ -325,6 +322,17 @@ class Meeting extends Phaser.State {
 				});
 				this.continue.inputEnabled = true;
 				this.continue.anchor.setTo(0.5, 0.5);
+				return;
+				// final end screen
+			} else if (this.time < -1) {
+				if (this.continue && this.continue.input.pointerOver()) {
+					this.continue.scale.setTo(1.1);
+					if (game.input.activePointer.leftButton.justPressed()) {
+						game.camera.fade(0, 250);
+						setTimeout(() => game.state.start("TypeWriter", true), 250);
+						return;
+					}
+				} else this.continue.scale.setTo(1);
 			}
 			game.input.mouse.capture = true;
 		}
@@ -455,6 +463,7 @@ class Meeting extends Phaser.State {
 
 	// loads in new goose emote anim/still
 	swapGoose = anim => {
+		if (this.lives < 0) return;
 		if (this.gooseAnim.includes(anim)) {
 			this.goose.loadTexture("gooseEmotes");
 			this.goose.animations.play(anim);

@@ -1,12 +1,13 @@
 class TypeWriter extends Phaser.State {
 	spawnerT; // typewriter spawner
 	honkLetters; // H N K O
+	honkButt; // space to honk
 	honkKeys; // keyboard inputs
 	letters; // falling letters
 	hlI; // index of keyboard press
 	// speed;
 	interval; // spawn interval
-	// iMult;
+	iMult;
 	fallSpeed; // fall speed
 	score; // score num
 	scoreText; // display score
@@ -19,11 +20,12 @@ class TypeWriter extends Phaser.State {
 	honkChildren; // prompt letters;
 	// init local vars
 	init = () => {
+		callback = null;
 		this.honkLetters = ["H", "N", "K", "O"];
 		this.letters = [];
 		this.hlI = 0;
 		this.interval = 500;
-		// iMult = 6;
+		this.iMult = 6;
 		this.fallSpeed = 2;
 		this.score = 0;
 		this.missed = [];
@@ -83,6 +85,8 @@ class TypeWriter extends Phaser.State {
 			)
 		);
 
+		this.honkButt = game.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR);
+
 		this.wings = [
 			game.add.sprite(100, 600, "LeftWing"),
 			game.add.sprite(500, 600, "RightWing"),
@@ -103,6 +107,8 @@ class TypeWriter extends Phaser.State {
 		swanlake.play();
 	};
 	update = () => {
+		if (this.honkButt.justDown)
+			honks[Math.floor(Math.random() * honks.length)].play();
 		// move letters down
 		[this.letters, this.missed].forEach(n =>
 			n.forEach(l => (l.sprite.body.y += this.fallSpeed))

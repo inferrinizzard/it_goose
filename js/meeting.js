@@ -31,8 +31,8 @@ class Meeting extends Phaser.State {
 	emitter; // particle emitter
 	stressBar; // stress bar
 	randoText; // random speech bubble text
-
 	gooseAnim = ["Shame", "Angery", "Panic", "Angery", "Greed", "Shine"]; // emotes
+
 	init = () => {
 		this.hkI = 0;
 		this.honkAnchor = 0;
@@ -71,7 +71,7 @@ class Meeting extends Phaser.State {
 
 		// load goose anims
 		this.goose = game.add.sprite(580, 240, "gooseEmotes");
-		["Angry", "Shame", "Greed", "Shine", "Panic"].forEach((e, k) =>
+		["Angery", "Shame", "Greed", "Shine", "Panic"].forEach((e, k) =>
 			this.goose.animations.add(e, [2 * k, 2 * k + 1], 8, true)
 		);
 		this.goose.loadTexture("gStand");
@@ -242,7 +242,7 @@ class Meeting extends Phaser.State {
 				this.game.add
 					.text(400, 450, "The goose is angered.", {
 						...wordStyle,
-						fill: "#FFF",
+						fill: "white",
 						fontSize: 72,
 					})
 					.anchor.setTo(0.5, 0);
@@ -252,7 +252,7 @@ class Meeting extends Phaser.State {
 					"Start over?",
 					{
 						...wordStyle,
-						fill: "#FFF",
+						fill: "white",
 						fontSize: 72,
 					}
 				);
@@ -261,7 +261,7 @@ class Meeting extends Phaser.State {
 				if (angered++ > 0) {
 					this.continue = this.game.add.text(600, 600, "Continue?", {
 						...wordStyle,
-						fill: "#FFF",
+						fill: "white",
 						fontSize: 72,
 					});
 					this.continue.inputEnabled = true;
@@ -282,7 +282,7 @@ class Meeting extends Phaser.State {
 					this.continue.scale.setTo(1.1);
 					if (game.input.activePointer.leftButton.justPressed()) {
 						game.camera.fade(0, 250);
-						setTimeout(() => game.state.start("TypeWriter", true), 250);
+						setTimeout(() => game.state.start("WaterCooler", true), 250);
 						return;
 					}
 				} else
@@ -312,13 +312,13 @@ class Meeting extends Phaser.State {
 				this.game.add
 					.text(400, 450, "The goose is satisfied.", {
 						...wordStyle,
-						fill: "#FFF",
+						fill: "white",
 						fontSize: 72,
 					})
 					.anchor.setTo(0.5, 0);
 				this.continue = this.game.add.text(600, 600, "Continue?", {
 					...wordStyle,
-					fill: "#FFF",
+					fill: "white",
 					fontSize: 72,
 				});
 				this.continue.inputEnabled = true;
@@ -331,7 +331,7 @@ class Meeting extends Phaser.State {
 					if (game.input.activePointer.leftButton.justPressed()) {
 						game.camera.fade(0, 250);
 						this.time = -10;
-						setTimeout(() => game.state.start("TypeWriter", true), 250);
+						setTimeout(() => game.state.start("WaterCooler", true), 250);
 						return;
 					}
 				} else this.continue.scale.setTo(1);

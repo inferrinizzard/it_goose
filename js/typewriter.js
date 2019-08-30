@@ -98,7 +98,7 @@ class TypeWriter extends Phaser.State {
 
 		// game pause/resume
 		game.onResume.add(() => {
-			if (this.nums < 100) callback();
+			if (this.nums < 100 && this.nums > 0) callback();
 		});
 
 		let swanlake = game.add.audio("swanlake", 0.25);
@@ -111,6 +111,21 @@ class TypeWriter extends Phaser.State {
 		[this.letters, this.missed].forEach(n =>
 			n.forEach(l => (l.sprite.body.y += this.fallSpeed))
 		);
+		if (this.nums === -1) {
+			this.end.y = this.end.y > -170 ? this.end.y - 1 : -170;
+			if (this.end.y <= -170) this.nums--;
+		} else if (this.nums === -2) {
+			game.add
+				.text(350, 300, "Thank you\nfor playing!", {
+					...wordStyle,
+					fontSize: 36,
+				})
+				.anchor.setTo(0.5, 0.5);
+			game.add
+				.sprite(500, 300, this.score > 0 ? "gHonk215" : "gDed")
+				.anchor.setTo(0.5, 0.5);
+			this.nums--;
+		}
 		// check finish
 		if (this.nums >= 100 && this.letters.length === 0) {
 			this.bar.destroy();
@@ -119,8 +134,11 @@ class TypeWriter extends Phaser.State {
 				"Meeting notes:\n" +
 				this.printText.join("\r\n") +
 				"\n" +
-				this.scoreText.text;
+				this.scoreText.text +
+				"\n" +
+				(this.score > 0 ? "Meeting successful!" : "Honk again next time....");
 			this.scoreText.destroy();
+			setTimeout(() => (this.nums = -1), 5000);
 			return;
 		}
 		// if intersecting scan bar

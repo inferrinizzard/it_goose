@@ -36,7 +36,7 @@ class Meeting extends Phaser.State {
 	init = () => {
 		this.hkI = 0;
 		this.honkAnchor = 0;
-		this.time = 10;
+		this.time = 90;
 		this.lives = 5;
 		this.speed = 0.5;
 		this.interval = 3100;

@@ -1,5 +1,5 @@
-var angered = 0; // global loss count
-var callback; // global callback temp storage
+let angered = 0; // global loss count
+let callback; // global callback temp storage
 class Meeting extends Phaser.State {
 	honkKeys; //[H, O, N, K] keys
 	honkButt; // space to honk
@@ -31,11 +31,12 @@ class Meeting extends Phaser.State {
 	emitter; // particle emitter
 	stressBar; // stress bar
 	randoText; // random speech bubble text
+
 	gooseAnim = ["Shame", "Angery", "Panic", "Angery", "Greed", "Shine"]; // emotes
 	init = () => {
 		this.hkI = 0;
 		this.honkAnchor = 0;
-		this.time = 90;
+		this.time = 10;
 		this.lives = 5;
 		this.speed = 0.5;
 		this.interval = 3100;
@@ -140,7 +141,7 @@ class Meeting extends Phaser.State {
 			game.input.keyboard.addKey(k.charCodeAt(0))
 		);
 		// honk audio
-		honks = honks.map(h => game.add.audio("honk" + h, 1));
+		honkSounds = honks.map(h => game.add.audio("honk" + h, 1));
 
 		// timer text
 		this.timer = game.add.text(
@@ -213,7 +214,7 @@ class Meeting extends Phaser.State {
 		if (this.lives <= 0) {
 			// clear screen
 			if (this.lives === 0) {
-				honks[Math.floor(Math.random() * honks.length)].play();
+				honkSounds[Math.floor(Math.random() * honkSounds.length)].play();
 				this.bubbles.forEach(b => b.destroy());
 				this.words.forEach(w => {
 					w.forEach(l => l.destroy());
@@ -293,7 +294,7 @@ class Meeting extends Phaser.State {
 		} else if (this.time <= 0) {
 			// clear board
 			if (Math.round(this.time) === 0) {
-				honks[Math.floor(Math.random() * honks.length)].play();
+				honkSounds[Math.floor(Math.random() * honkSounds.length)].play();
 				this.bubbles.forEach(b => b.destroy());
 				this.words.forEach(w => {
 					w.forEach(l => l.destroy());
@@ -458,12 +459,12 @@ class Meeting extends Phaser.State {
 			}, 100);
 		}
 		this.sawJump = true;
-		honks[Math.floor(Math.random() * honks.length)].play();
+		honkSounds[Math.floor(Math.random() * honkSounds.length)].play();
 	};
 
 	// loads in new goose emote anim/still
 	swapGoose = anim => {
-		if (this.lives < 0) return;
+		if (this.lives < 0 || this.time < -1) return;
 		if (this.gooseAnim.includes(anim)) {
 			this.goose.loadTexture("gooseEmotes");
 			this.goose.animations.play(anim);

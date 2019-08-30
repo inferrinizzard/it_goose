@@ -1,10 +1,11 @@
 // start Phaser instance
-var game = new Phaser.Game(800, 800, Phaser.AUTO, "content", true);
+let game = new Phaser.Game(800, 800, Phaser.AUTO, "content", true);
 
 // global honks
-var honks = ["English", "French", "Hindi", "Russian", "Japan"];
+const honks = ["English", "French", "Hindi", "Russian", "Japan"];
+let honkSounds;
 // global text styling
-var wordStyle = { font: "Charter", fontSize: 24, fill: "#000" };
+let wordStyle = { font: "Charter", fontSize: 24, fill: "#000" };
 
 // starting state
 class MainMenu extends Phaser.State {
@@ -65,6 +66,7 @@ class MainMenu extends Phaser.State {
 		game.load.onLoadComplete.add(() => {
 			game.camera.fade(0, 250);
 			setTimeout(() => game.state.start("Meeting"), 500);
+			// setTimeout(() => game.state.start("TypeWriter"), 500);
 		}, this);
 
 		let bg = game.add.sprite(0, 0, "titleScreenCleaned");

@@ -5,7 +5,6 @@ class TypeWriter extends Phaser.State {
 	honkKeys; // keyboard inputs
 	letters; // falling letters
 	hlI; // index of keyboard press
-	// speed;
 	interval; // spawn interval
 	iMult;
 	fallSpeed; // fall speed
@@ -18,7 +17,7 @@ class TypeWriter extends Phaser.State {
 	end; // display final text
 	wings; // typing wings
 	honkChildren; // prompt letters;
-	// init local vars
+
 	init = () => {
 		callback = null;
 		this.honkLetters = ["H", "N", "K", "O"];
@@ -57,8 +56,7 @@ class TypeWriter extends Phaser.State {
 				this.letters.push({ sprite: letter, letter: this.hlI });
 				game.physics.arcade.enable(letter);
 				this.hlI = Math.floor(Math.random() * this.honkLetters.length);
-
-				if (this.nums++ < 100 && !game.paused)
+				if (this.nums++ < 100 && !game.paused && this.spawnerT)
 					this.spawnerT = setTimeout(callback, this.interval);
 			};
 			this.spawnerT = setTimeout(callback, this.interval);
@@ -93,7 +91,7 @@ class TypeWriter extends Phaser.State {
 		];
 
 		// honk audio
-		honks = honks.map(h => game.add.audio("honk" + h, 1));
+		honkSounds = honks.map(h => game.add.audio("honk" + h, 1));
 		new Array(5).fill("tw").forEach((tw, k) => game.add.audio(tw + (k + 1)));
 		this.end = game.add.text(400, 30, "", { ...wordStyle, fontSize: 32 });
 		this.end.anchor.setTo(0.5, 0);
@@ -108,7 +106,7 @@ class TypeWriter extends Phaser.State {
 	};
 	update = () => {
 		if (this.honkButt.justDown)
-			honks[Math.floor(Math.random() * honks.length)].play();
+			honkSounds[Math.floor(Math.random() * honkSounds.length)].play();
 		// move letters down
 		[this.letters, this.missed].forEach(n =>
 			n.forEach(l => (l.sprite.body.y += this.fallSpeed))
@@ -145,7 +143,7 @@ class TypeWriter extends Phaser.State {
 			delSprite.destroy();
 			game.sound.play("tw" + Math.ceil(Math.random() * 5));
 			if (deletter.letter == Math.floor(Math.random() * 4))
-				honks[Math.floor(Math.random() * honks.length)].play();
+				honkSounds[Math.floor(Math.random() * honkSounds.length)].play();
 
 			game.add
 				.tween(this.wings[Math.floor(deletter.letter / 2)])
